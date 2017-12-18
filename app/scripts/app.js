@@ -229,17 +229,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     app.$.modelsAjax.generateRequest();
   }
 
-  app.handleVhosts = function (evt) {
-    var vhosts = [];
-    for  (var i in evt.target.lastResponse) {
-      if (evt.target.lastResponse[i] !== "*") {
-        vhosts.push(evt.target.lastResponse[i]);
-      }
-    }
-    if (!app.currentVhost) {
-      app.setVhost(vhosts[0]);
-    }
-    app.vhosts = vhosts;
+  app.handleConfig = function (evt) {
+    app.configComponent = evt.target.lastResponse;
   }
 
 
@@ -306,7 +297,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   // See https://github.com/Polymer/polymer/issues/1381
   window.addEventListener('WebComponentsReady', function() {
     // Fire all network :)
-    app.$.vhostAjax.url = app.getUrl('/configs');
+    app.$.configAjax.url = app.getUrl('/configs');
     app.$.versionsAjax.url = app.getUrl('/versions');
     app.$.deploymentsAjax.url = app.getUrl('/deployments');
     app.$.servicesAjax.url = app.getUrl('/services');

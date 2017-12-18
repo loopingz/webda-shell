@@ -78,7 +78,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <body unresolved>
   <span id="browser-sync-binding"></span>
   <template is="dom-bind" id="app">
-    <iron-ajax id="vhostAjax" handle-as="json" on-response="handleVhosts" auto></iron-ajax>
+    <iron-ajax id="configAjax" handle-as="json" on-response="handleConfig" auto></iron-ajax>
     <iron-ajax id="deploymentsAjax" handle-as="json" last-response="{{deployments}}"></iron-ajax>
     <iron-ajax id="versionsAjax" handle-as="json" last-response="{{versions}}"></iron-ajax>
     <iron-ajax id="modelsAjax" handle-as="json" last-response="{{models}}"></iron-ajax>
@@ -134,7 +134,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <li>Service deployment Configuration</li>
                 </ul>
               </p>
-              <p><a href="http://webda.io/docs/deploy/configuration.html" target="_blank">Learn More</a></p>
+              <div class="righted"><a href="http://webda.io/docs/deploy/configuration.html" target="_blank">Learn More</a></div>
             </div>
           </section>
         </iron-pages>
@@ -233,7 +233,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <iron-icon icon="build"></iron-icon>
                   <h2>Configuration</h2>
                   <br />
-                  <configuration-panel label="Global Configuration" component="{{app.config.global}}"></configuration-panel>
+                  <configuration-panel label="Global Configuration" component="{{app.configComponent}}"></configuration-panel>
                   <p></p>
                   <div class="configurationSelectors">
                     <p>Choose a Deployment</p>
@@ -274,6 +274,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <template is="dom-if" if="{{currentComponent}}">
               <paper-button on-tap="confirmDeleteCurrentComponent"><iron-icon icon="delete" style="color: #dc6262;"></iron-icon></paper-button>
             </template>
+            <template is="dom-if" if="{{noCurrentComponent}}">
+              <div style="width: 91px;">&nbsp;</div>
+            </template>
             <paper-dropdown-menu label="Active deployment" vertical-align="bottom">
               <paper-listbox class="dropdown-content">
                 <template is="dom-repeat" items="{{deployments}}">
@@ -281,10 +284,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </template>
               </paper-listbox>
             </paper-dropdown-menu>
-            <span class=""></span>
-            <template is="dom-if" if="{{currentComponent}}">
-              <paper-button on-tap="saveCurrentComponent" disabled="[[!dirty]]"><iron-icon icon="save"></iron-icon>Save</paper-button>
-            </template>
+            <span class="spacer"></span>
+            <paper-button on-tap="saveCurrentComponent" disabled="[[!dirty]]"><iron-icon icon="save"></iron-icon>Save</paper-button>
           </paper-toolbar>
         </div>
     </paper-drawer-panel>

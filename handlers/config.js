@@ -10,48 +10,47 @@ const merge = require('merge');
 
 class ConfigurationService extends Executor {
 
-  init(config) {
-    config['/api/modda'] = {"method": ["GET"], "executor": this._name, "_method": this.getServices};
-    config['/api/models'] = {"method": ["GET", "POST"], "executor": this._name, "_method": this.crudModels};
-    config['/api/models/{name}'] = {"method": ["GET", "PUT", "DELETE"], "executor": this._name, "_method": this.crudModels};
-    config['/api/services'] = {"method": ["GET"], "executor": this._name, "_method": this.crudService};
-    config['/api/services/{name}'] = {
+  init() {
+    this._addRoute('/api/modda', {"method": ["GET"], "executor": this._name, "_method": this.getServices});
+    this._addRoute('/api/models', {"method": ["GET", "POST"], "executor": this._name, "_method": this.crudModels});
+    this._addRoute('/api/models/{name}', {"method": ["GET", "PUT", "DELETE"], "executor": this._name, "_method": this.crudModels});
+    this._addRoute('/api/services', {"method": ["GET"], "executor": this._name, "_method": this.crudService});
+    this._addRoute('/api/services/{name}', {
       "method": ["PUT", "DELETE", "POST"],
       "executor": this._name,
       "_method": this.crudService
-    };
-    config['/api/routes'] = {
+    });
+    this._addRoute('/api/routes', {
       "method": ["GET", "POST", "PUT", "DELETE"],
       "executor": this._name,
       "_method": this.crudRoute
-    };
-    config['/api/moddas'] = {"method": ["GET"], "executor": this._name, "_method": this.getModdas};
-    config['/api/configurations/Global'] = {"method": ["PUT"], "executor": this._name, "_method": this.updateGlobal};
-    config['/api/deployers'] = {"method": ["GET"], "executor": this._name, "_method": this.getDeployers};
-    config['/api/deployments'] = {"method": ["GET", "POST"], "executor": this._name, "_method": this.restDeployment};
-    config['/api/deployments/{name}'] = {
+    });
+    this._addRoute('/api/moddas', {"method": ["GET"], "executor": this._name, "_method": this.getModdas});
+    this._addRoute('/api/configurations/Global', {"method": ["PUT"], "executor": this._name, "_method": this.updateGlobal});
+    this._addRoute('/api/deployers', {"method": ["GET"], "executor": this._name, "_method": this.getDeployers});
+    this._addRoute('/api/deployments', {"method": ["GET", "POST"], "executor": this._name, "_method": this.restDeployment});
+    this._addRoute('/api/deployments/{name}', {
       "method": ["DELETE", "PUT"],
       "executor": this._name,
       "_method": this.restDeployment
-    };
-    config['/api/versions'] = {"method": ["GET"], "executor": this._name, "_method": this.versions};
-    config['/api/deploy/{name}'] = {"method": ["GET"], "executor": this._name, "_method": this.deploy};
-    config['/api/vhosts'] = {"method": ["POST", "GET"], "executor": this._name, "_method": this.getVhosts};
-    config['/api/configs'] = {"method": ["GET"], "executor": this._name, "_method": this.getConfig};
-    config['/api/configs/{vhost}'] = {"method": ["PUT"], "executor": this._name, "_method": this.updateCurrentVhost};
-    config['/api/browse/{path}'] = {
+    });
+    this._addRoute('/api/versions', {"method": ["GET"], "executor": this._name, "_method": this.versions});
+    this._addRoute('/api/deploy/{name}', {"method": ["GET"], "executor": this._name, "_method": this.deploy});
+    this._addRoute('/api/config', {"method": ["GET"], "executor": this._name, "_method": this.getConfig});
+    this._addRoute('/api/config', {"method": ["PUT"], "executor": this._name, "_method": this.updateCurrentVhost});
+    this._addRoute('/api/browse/{path}', {
       "method": ["GET", "PUT", "DELETE"],
       "executor": this._name,
       "_method": this.fileBrowser,
       'allowPath': true
-    };
-    config['/{path}'] = {"method": ["GET"], "executor": this._name, "_method": this.uiBrowser, 'allowPath': true};
+    });
+    this._addRoute('/{path}', {"method": ["GET"], "executor": this._name, "_method": this.uiBrowser, 'allowPath': true});
     this.refresh();
   }
 
   refresh() {
-    this._config = this._webda.config[this._webda._currentVhost];
-    this._computeConfig = this._webda.computeConfig[this._webda._currentVhost];
+    this._config = this._webda.config;
+    this._computeConfig = this._webda.computeConfig;
     this._depoyments = {};
   }
 
@@ -114,7 +113,7 @@ class ConfigurationService extends Executor {
   }
 
   updateGlobal(ctx) {
-    this._config.global.params = ctx.body.params;
+    this._config.parameters = ctx.body.parameters;
     this.save();
   }
 
@@ -125,8 +124,8 @@ class ConfigurationService extends Executor {
       res[i] = {builtin: true, name: i};
     }
     // Add custom model
-    for (let i in this._config.global.models) {
-      res[i] = {'src': this._config.global.models[i], 'name': i};
+    for (let i in this._config.models) {
+      res[i] = {'src': this._config.models[i], 'name': i};
     }
     var arrayRes = [];
     for (let i in res) {
@@ -180,11 +179,8 @@ class ` + className + ` extends ` + extendName + ` {
   }
   crudModels(ctx) {
     let models = this._getModels();
-    if (!this._config.global) {
-      this._config.global = {models: {}};
-    }
-    if (!this._config.global.models) {
-      this._config.global.models = {};
+    if (!this._config.models) {
+      this._config.models = {};
     }
     if (ctx._route._http.method === "GET") {
       if (ctx._params.name) {
@@ -204,24 +200,24 @@ class ` + className + ` extends ` + extendName + ` {
     } else if (ctx._route._http.method === "DELETE") {
       let name = ctx._params.name;
       console.log('should DELETE', name, ctx._params);
-      if (this._config.global.models[name]) {
-        let file = this._config.global.models[name];
+      if (this._config.models[name]) {
+        let file = this._config.models[name];
         if (!file.endsWith('.js')) {
           file += '.js';
         }
         if (fs.existsSync(file)) {
           fs.unlinkSync(file);
         }
-        delete this._config.global.models[name];
+        delete this._config.models[name];
       }
       this.save();
       return;
     } else if (ctx._route._http.method === "POST") {
       let name = ctx.body.name;
-      let model = this._config.global.models[name];
+      let model = this._config.models[name];
       this.cleanBody(ctx);
       let file = ctx.body.src;
-      this._config.global.models[name] = ctx.body.src;
+      this._config.models[name] = ctx.body.src;
       if (!file.endsWith('.js')) {
         file += '.js';
       }
@@ -272,8 +268,8 @@ class ` + className + ` extends ` + extendName + ` {
   crudService(ctx) {
     if (ctx._route._http.method === "GET") {
       var services = [];
-      for (let i in this._config.global.services) {
-        let service = this._config.global.services[i];
+      for (let i in this._config.services) {
+        let service = this._config.services[i];
         service._name = i;
         service._type = "Service";
         services.push(service);
@@ -286,16 +282,16 @@ class ` + className + ` extends ` + extendName + ` {
     }
     let name = ctx._params.name;
     if (ctx._route._http.method === "DELETE") {
-      delete this._config.global.services[name];
+      delete this._config.services[name];
       this.save();
       return;
     }
-    let service = this._config.global.services[name];
+    let service = this._config.services[name];
     this.cleanBody(ctx);
     if (ctx._route._http.method === "POST" && service != null) {
       throw 409;
     }
-    this._config.global.services[name] = ctx.body;
+    this._config.services[name] = ctx.body;
     this.save();
   }
 
@@ -312,11 +308,12 @@ class ` + className + ` extends ` + extendName + ` {
   }
 
   crudRoute(ctx) {
+    this._config.routes = this._config.routes || {};
     if (ctx._route._http.method === "GET") {
       var routes = [];
-      for (let i in this._computeConfig) {
-        if (!i.startsWith("/")) continue;
-        let route = this._computeConfig[i];
+      console.log(this._computeConfig.routes);
+      for (let i in this._computeConfig.routes) {
+        let route = this._computeConfig.routes[i];
         route._name = i;
         route._type = "Route";
         route["_uri-template-parse"] = undefined;
@@ -324,7 +321,7 @@ class ` + className + ` extends ` + extendName + ` {
           route.params = {};
         }
         // Check if it is a manual route or not
-        route._manual = this._config[i] !== undefined;
+        route._manual = this._config.routes[i] !== undefined;
         routes.push(route);
       }
       routes.sort(function (a, b) {
@@ -357,15 +354,11 @@ class ` + className + ` extends ` + extendName + ` {
     this.save();
   }
 
-  getVhosts(ctx) {
-    ctx.write(Object.keys(this._webda.config));
-  }
-
   getConfig(ctx) {
-    ctx.write(this._webda.config[ctx._params.vhost]);
+    ctx.write(this._webda.config);
   }
 
-  updateCurrentVhost() {
+  updateConfig() {
     // For later use
   }
 
@@ -412,21 +405,24 @@ class ` + className + ` extends ` + extendName + ` {
 }
 
 var ServerConfig = {
-  "*": "localhost",
-  localhost: {
-    global: {
-      services: {
-        deployments: {
-          expose: {},
-          folder: './deployments',
-          type: 'FileStore',
-          lastUpdate: false,
-          beautify: ' '
-        },
-        configuration: {
-          require: ConfigurationService
-        }
-      }
+  version: 1,
+  parameters: {
+    website: {
+      url: 'localhost',
+      path: 'app/',
+      index: 'index.html'
+    }
+  },
+  services: {
+    deployments: {
+      expose: {},
+      folder: './deployments',
+      type: 'FileStore',
+      lastUpdate: false,
+      beautify: ' '
+    },
+    configuration: {
+      require: ConfigurationService
     }
   }
 };
@@ -435,8 +431,6 @@ class WebdaConfigurationServer extends WebdaServer {
 
   constructor(config) {
     super(config);
-    this.initAll();
-    this._vhost = 'localhost';
     this._deployers = {};
     this._deployers["lambda"] = require("../deployers/lambda");
     this._deployers["s3"] = require("../deployers/s3");
@@ -470,7 +464,7 @@ class WebdaConfigurationServer extends WebdaServer {
 
   saveHostConfiguration(config, file) {
     // Update first the configuration
-    this.config[this._currentVhost] = config;
+    this.config = config;
     fs.writeFileSync(this._file, this.exportJson(this.config));
 
     // Need to reload the configuration to resolve it
@@ -502,19 +496,19 @@ class WebdaConfigurationServer extends WebdaServer {
     } else if (fs.existsSync("./webda.config.json")) {
       this._file = "./webda.config.json";
       this.config = JSON.parse(fs.readFileSync(this._file, {encoding: 'utf8'}));
+      if (!this.config.version) {
+        this.config = this.migrateConfig(this.config);
+      }
     } else {
       // Init a default configuration if needed
       console.log("No file is present, creating webda.config.json");
       this.config = {};
       this._file = path.resolve("./webda.config.json");
-      this._currentVhost = "changeme.webda.io";
-      this.config["*"] = this._currentVhost;
-      this.saveHostConfiguration({global: {params: {}, services: {}}});
+      this.config['version', 1]
+      this.saveHostConfiguration({parameters: {}, services: {}});
       return;
     }
     this._mockWedba = new Webda(config);
-    this._currentVhost = this.getHost();
-    this._mockWedba.initAll();
     this.computeConfig = this._mockWedba._config;
   }
 
@@ -523,23 +517,12 @@ class WebdaConfigurationServer extends WebdaServer {
     return ServerConfig;
   }
 
-  getHost() {
-    var vhost = this.config["*"];
-    if (vhost === undefined) {
-      for (var i in this.config) {
-        vhost = i;
-        break;
-      }
-    }
-    return vhost;
-  }
-
   loadDeploymentConfig(env) {
     var name = './deployments/' + env;
     if (fs.existsSync(name)) {
       let deployment = JSON.parse(fs.readFileSync(name));
       this.config = super.loadConfiguration();
-      this.resolveConfiguration(this.config[this.getHost()], deployment);
+      this.resolveConfiguration(this.config, deployment);
       return JSON.parse(this.exportJson(this.config));
     } else {
       console.log("Unknown deployment: " + env);
@@ -556,10 +539,10 @@ class WebdaConfigurationServer extends WebdaServer {
    */
   resolveConfiguration(config, deployment) {
     if (deployment.resources.region && !deployment.params.region) {
-      deployment.params.region = deployment.resources.region;
+      deployment.parameters.region = deployment.resources.region;
     }
-    merge.recursive(config.global.params, deployment.params);
-    merge.recursive(config.global.services, deployment.services);
+    merge.recursive(config.parameters, deployment.parameters);
+    merge.recursive(config.services, deployment.services);
   }
 
   install(env, server_config, args) {
@@ -571,8 +554,7 @@ class WebdaConfigurationServer extends WebdaServer {
       }
       this.resolveConfiguration(this.config[this.getHost()], deployment);
       let srcConfig = this.exportJson(this.config);
-      let host = this.getHost();
-      return new this._deployers[deployment.type](host, this.computeConfig[host], srcConfig, deployment).installServices(args);
+      return new this._deployers[deployment.type](this.computeConfig, srcConfig, deployment).installServices(args);
     });
   }
 
@@ -607,7 +589,7 @@ class WebdaConfigurationServer extends WebdaServer {
 
       // Normal launch from the console or forked process
       let host = this.getHost();
-      return new this._deployers[deployment.type](host, this.computeConfig[host], srcConfig, deployment).deploy(args);
+      return new this._deployers[deployment.type](this.computeConfig, srcConfig, deployment).deploy(args);
     });
   }
 
@@ -617,9 +599,16 @@ class WebdaConfigurationServer extends WebdaServer {
         console.log("Deployment " + env + " unknown");
         return Promise.resolve();
       }
-      let host = this.getHost();
-      return new this._deployers[deployment.type](host, this.computeConfig[host], deployment).undeploy(args);
+      return new this._deployers[deployment.type](this.computeConfig, deployment).undeploy(args);
     });
+  }
+
+  serveStaticWebsite(express, app) {
+    app.use(express.static(__dirname + '/../app/'));
+  }
+
+  serveIndex(express, app) {
+    app.use(express.static(__dirname + '/../app/index.html'));
   }
 
   serve(port, openBrowser) {

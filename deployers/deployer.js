@@ -2,7 +2,7 @@
 const _extend = require("util")._extend;
 
 class Deployer {
-  constructor(vhost, config, srcConfig, deployment) {
+  constructor(config, srcConfig, deployment) {
     this._step = 1;
     this.params = {};
     this.resources = {};

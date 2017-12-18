@@ -119,6 +119,21 @@ class WebdaServer extends Webda {
     res.sendFile(this._staticIndex);
   }
 
+  serveStaticWebsite(express, app) {
+    if (this.getGlobalParams().website && this.getGlobalParams().website.path) {
+      console.log('Serving static content', this.getGlobalParams().website.path);
+      app.use(express.static(this.getGlobalParams().website.path));
+    }
+  }
+
+  serveIndex(express, app) {
+    if (this.getGlobalParams().website && this.getGlobalParams().website.path) {
+      let index = this.getGlobalParams().website.index || 'index.html';
+      this._staticIndex = path.resolve(index);
+      app.get('*', this.handleStaticIndexRequest.bind(this));
+    }
+  }
+
   serve(port, websockets) {
     var http = require('http');
     const path = require('path');
@@ -142,11 +157,7 @@ class WebdaServer extends Webda {
     app.set('trust proxy', 'loopback, 10.0.0.0/8');
 
     app.use(this.handleRequest.bind(this));
-    this.setHost();
-    if (this.getGlobalParams().static) {
-      console.log('Serving static content', this.getGlobalParams().static);
-      app.use(express.static(this.getGlobalParams().static));
-    }
+    this.serveStaticWebsite(express, app);
 
     this._http = http.createServer(app).listen(port);
     if (websockets) {
@@ -155,10 +166,7 @@ class WebdaServer extends Webda {
       this._io = require('socket.io')(this._http);
       this.emit('Webda.Init.SocketIO', this._io);
     }
-    if (this.getGlobalParams().staticIndex) {
-      this._staticIndex = path.resolve(this.getGlobalParams().staticIndex);
-      app.get('*', this.handleStaticIndexRequest.bind(this));
-    }
+    this.serveIndex(express, app);
     console.log('Server running at http://0.0.0.0:' + port);
   }
 }

@@ -48,6 +48,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           app.displayJson(app.getRealConfiguration(this.component));
         },
         _isStore(type) {
+          if (type && type.indexOf('/') < 0) {
+            type = 'Webda/' + type;
+          }
           var stores = ['Webda/DynamoStore','Webda/MemoryStore','Webda/FileStore','Webda/MongoStore']
           return stores.indexOf(type) >= 0;
         },
@@ -130,6 +133,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               this.errors = undefined;
               this.toggleClass('invalid', false, this.$.params);
             } else {
+              console.log('this is not valid', app.ajv.errorsText());
               this.errors = 'Configuration' + app.ajv.errorsText().substr(4);
               this.toggleClass('invalid', true, this.$.params);
             }

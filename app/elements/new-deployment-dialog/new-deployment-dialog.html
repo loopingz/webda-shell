@@ -78,6 +78,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </template>
         <div>[[selected.description]]</div>
       </div>
+      Type:[[configuration.type]]<br />
+      Full:[[configuration]]<br />
+      <iron-pages attr-for-selected="data-type" selected="{{configuration.type}}">
+        <section data-type="lambda">
+          <paper-input value="{{configuration.arn}}" placeholder="arn:aws:lambda:us-west-2:277719386420:function:webda-test" label="Lambda Function ARN"></paper-input>
+        </section>
+        <section data-type="s3">
+          <paper-input value="{{configuration.bucket}}" placeholder="arn:aws:lambda:us-west-2:277719386420:function:webda-test" label="Bucket"></paper-input>
+          <paper-toggle value="{{configuration.cloudfront}}">Create a cloudfront distribution</paper-toggle>
+          <paper-toggle value="{{configuration.ssl}}">Create a SSL certificate</paper-toggle>
+          <paper-toggle value="{{configuration.route53}}">Create a domain entry</paper-toggle>
+        </section>
+        <section data-type="wedeploy">
+          <require-panel file="{{route.file}}"></require-panel>
+        </section>
+        <section data-type="fargate">
+          <paper-input placeholder="echo" value="{{route.params.result}}" label="Content"></paper-input>
+          <paper-input placeholder="text/plain" value="{{route.params.mime}}" label="Content-Type"></paper-input>
+        </section>
+      </iron-pages>
       <div class="buttons">
         <span id="error">[[error]]</span>
         <paper-button dialog-dismiss>Cancel</paper-button>
@@ -103,7 +123,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         create: function () {
           this.$.ajax.method = 'POST';
           // Clone default config
-          this.configuration = JSON.parse(JSON.stringify(this.selected.configuration.default));
           this.configuration.uuid = this.name;
           this.configuration.type = this.selected.uuid;
           this.$.ajax.body = this.configuration;
@@ -132,7 +151,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
           if (target !== undefined) {
             this.selected = this.deployers[target.id];
-            this.configuration.type = this.deployers[target.id];
+            this.configuration = JSON.parse(JSON.stringify(this.selected.configuration.default));
+            console.log(this.configuration, this.deployers[target.id]);
+            this.configuration.type = this.deployers[target.id].uuid;
             if (this.old) {
               this.old.removeAttribute("selected");
             }

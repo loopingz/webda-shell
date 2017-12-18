@@ -96,30 +96,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <paper-toolbar id="drawerToolbar">s
             <span>[[getRouteLabel(route)]]</span>
             <span class="space"></span>
-            <paper-fab mini icon="add" on-tap="newObject" raised></paper-fab>
+            <template is="dom-if" if="[[newEnable]]">
+              <paper-fab mini icon="add" on-tap="newObject" raised></paper-fab>
+            </template>
         </paper-toolbar>
 
         <!-- Drawer Content -->
         <iron-pages attr-for-selected="data-route" selected="{{route}}">
           <section data-route="routes">
             <template is="dom-repeat" items="{{routes}}">
-              <url-route on-click="onSelectRoute" data-index="{{index}}" url="{{item}}"></url-route>  
+              <url-route on-click="onSelectRoute" data-index="{{index}}" url="{{item}}" selected-index="[[selectedIndex]]"></url-route>
             </template>
           </section>
           <section data-route="services">
             <template is="dom-repeat" items="{{services}}">
-              <paper-item on-click="onSelectService" data-index="{{index}}">{{ item._name }}</paper-item>
+              <configuration-item on-click="onSelectService" data-index="{{index}}" selected-index="[[selectedIndex]]">{{ item._name }}</configuration-item>
             </template>
           </section>
           <section data-route="models">
             <template is="dom-repeat" items="{{models}}" filter="_noBuiltin">
-              <paper-item on-click="onSelectModel" data-index="{{index}}">{{ item.name }}</paper-item>
+              <configuration-item on-click="onSelectModel" data-index="{{index}}" selected-index="[[selectedIndex]]">{{ item.name }}</configuration-item>
             </template>
           </section>
           <section data-route="deployments">
             <template is="dom-repeat" items="{{deployments}}">
-              <paper-item on-click="onSelectDeployment" data-index="{{index}}">{{ item.uuid }}</paper-item>
+              <configuration-item on-click="onSelectDeployment" data-index="{{index}}" selected-index="[[selectedIndex]]">{{ item.uuid }}</configuration-item>
             </template>
+          </section>
+          <section data-route="configuration">
+            <div>
+              <p>
+                Every services or routes receive the configuration, the configuration is the result of : 
+                <ul>
+                  <li>Global Configuration</li>
+                  <li>Deployment Configuration</li>
+                  <li>Service Configuration</li>
+                  <li>Service deployment Configuration</li>
+                </ul>
+              </p>
+              <p><a href="http://webda.io/docs/deploy/configuration.html" target="_blank">Learn More</a></p>
+            </div>
           </section>
         </iron-pages>
       </paper-scroll-header-panel>
@@ -130,10 +146,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <paper-toolbar id="mainToolbar">
           <paper-icon-button id="paperToggle" icon="menu" paper-drawer-toggle></paper-icon-button>
           <paper-tabs attr-for-selected="data-route" selected="{{route}}" noink on-iron-select="resetComponent">
-            <paper-tab data-route="routes"><iron-icon icon="explore"></iron-icon>Routes</paper-tab>
-            <paper-tab data-route="models"><iron-icon icon="class"></iron-icon>Models</paper-tab>
             <paper-tab data-route="services"><iron-icon icon="extension"></iron-icon>Services</paper-tab>
+            <paper-tab data-route="models"><iron-icon icon="class"></iron-icon>Models</paper-tab>
+            <paper-tab data-route="routes"><iron-icon icon="explore"></iron-icon>Routes</paper-tab>
             <paper-tab data-route="deployments"><iron-icon icon="cloud-upload"></iron-icon>Deployments</paper-tab>
+            <paper-tab data-route="configuration"><iron-icon icon="build"></iron-icon>Configuration</paper-tab>
           </paper-tabs>
           <span class="space"></span>
           <div id="logo" class="disconnect"><a href="http://webda.io" target="_blank"><span></span></a></div>
@@ -146,6 +163,89 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div style="float: right; margin-bottom: -150px; margin-top: 20px;">{{currentComponent._type}}</div>
             <h2>{{currentComponent._name}}</h2>
           </div>
+          <template is="dom-if" if="{{noCurrentComponent}}">
+            <iron-pages attr-for-selected="data-route" selected="{{route}}">
+              <div data-route="routes" class="explanation">
+                <div>
+                  <iron-icon icon="explore"></iron-icon>
+                  <h2>Routes</h2>
+                  <p>You can see your API route that will be deployed from here</p>
+                  <p>You will be able able to export the Swagger definition in coming version</p>
+                  <div class="centered"><paper-button disabled>Swagger</paper-button></div>
+                  <p>From here you can also add a custom route, but Webda good practices encourage you to use either a Service or a Model.</p>
+                  <p></p>
+                  <div class="righted"><paper-button class="primary" on-tap="newObject">Create new route</paper-button></div>
+                </div>
+              </div>
+              <div data-route="services" class="explanation">
+                <div>
+                  <iron-icon icon="extension"></iron-icon>
+                  <h2>Services</h2>
+                  <p>This is the most structured way to create new API in Webda</p>
+                  <p>Like a Spring service, it should handle behaviors.</p>
+                  <p><b>Worker</b> implements some continous job that would run .</p>
+                  <p><a href="https://webda.io/docs/develop/" target="_blank">Learn More</a></p>
+                  <p></p>
+                  <div class="righted"><paper-button class="primary" on-tap="newObject">Create new service</paper-button></div>
+                </div>
+              </div>
+              <div data-route="models" class="explanation">
+                <div>
+                  <iron-icon icon="class"></iron-icon>
+                  <h2>Models</h2>
+                  <p>Define your business logic along with your Model</p>
+                  <p>The Store services will use those models to define custom actions and rights on those objects.</p>
+                  <p>You can also attach a <a href="http://json-schema.org/" target="_blank">JSON Schema</a> to specify the overall structure of your objects.</p>
+                  <p>You can override methods to implements events attached to those objects</p>
+                  <p><a href="https://webda.io/docs/develop/models.html" target="_blank">Learn More</a></p>
+                  <p></p>
+                  <div class="righted"><paper-button class="primary" on-tap="newObject">Create new model</paper-button></div>
+                </div>
+              </div>
+              <div data-route="deployments" class="explanation">
+                <div>
+                  <iron-icon icon="cloud-upload"></iron-icon>
+                  <h2>Deployments</h2>
+                  <p>Define a deployment group and then its deployment unit</p>
+                  <p>Deploy your API on <a href="https://aws.amazon.com/lambda/" target="_blank">Lambda</a>, <a href="https://www.docker.com/" target="_blank">Docker</a> or <a href="https://wedeploy.com" target="_blank">Wedeploy</a>.</p>
+                  <p>Deploy your resources along with your API or through <a href="https://aws.amazon.com/s3/" target="_blank">S3</a> and <a href="https://aws.amazon.com/cloudfront/" target="_blank">CloudFront</a>.</p>
+                  <p>Deploy your workers on <a href="https://aws.amazon.com/fargate/" target="_blank">Fargate</a>, <a href="https://www.docker.com/" target="_blank">Docker</a> or <a href="https://wedeploy.com" target="_blank">WeDeploy</a>.</p>
+                  <p><a href="https://webda.io/docs/deploy/" target="_blank">Learn More</a></p>
+                  <p></p>
+                  <div class="righted"><paper-button class="primary" on-tap="newObject">Create new deployment</paper-button></div>
+                </div>
+              </div>
+              <div data-route="welcome" class="explanation">
+                <div>
+                  <iron-icon icon="cloud-upload"></iron-icon>
+                  <h2>Welcome to Webda</h2>
+                  <p>Define a deployment group and then its deployment unit</p>
+                  <p>Deploy your API on <a href="https://aws.amazon.com/lambda/" target="_blank">Lambda</a>, <a href="https://www.docker.com/" target="_blank">Docker</a> or <a href="https://wedeploy.com" target="_blank">Wedeploy</a>.</p>
+                  <p>Deploy your resources along with your API or through <a href="https://aws.amazon.com/s3/" target="_blank">S3</a> and <a href="https://aws.amazon.com/cloudfront/" target="_blank">CloudFront</a>.</p>
+                  <p>Deploy your workers on <a href="https://aws.amazon.com/fargate/" target="_blank">Fargate</a>, <a href="https://www.docker.com/" target="_blank">Docker</a> or <a href="https://wedeploy.com" target="_blank">WeDeploy</a>.</p>
+                  <p><a href="https://webda.io/docs/deploy/" target="_blank">Learn More</a></p>
+                  <p></p>
+                  <div class="righted"><paper-button class="primary" on-tap="newObject">Create new deployment</paper-button></div>
+                </div>
+              </div>
+              <div data-route="configuration" class="explanation">
+                <div style="width: 90%; max-width: unset">
+                  <iron-icon icon="build"></iron-icon>
+                  <h2>Configuration</h2>
+                  <br />
+                  <configuration-panel label="Global Configuration" component="{{app.config.global}}"></configuration-panel>
+                  <p></p>
+                  <div class="configurationSelectors">
+                    <p>Choose a Deployment</p>
+                    <p>Choose a Service</p>
+                  </div>
+                  <p>
+                    <configuration-panel label="Resolved Configuration"></configuration-panel>
+                  </p>
+                </div>
+              </div>
+            </iron-pages>
+          </template>
           <template is="dom-if" if="{{currentComponent}}">
             <iron-pages attr-for-selected="data-type" selected="{{currentComponent._type}}" fallback-selection="Welcome">
               <section data-type="Deployment">
@@ -174,7 +274,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <template is="dom-if" if="{{currentComponent}}">
               <paper-button on-tap="confirmDeleteCurrentComponent"><iron-icon icon="delete" style="color: #dc6262;"></iron-icon></paper-button>
             </template>
-            <span class="title" style="margin-left: 0px;margin-top: -20px;"><label>Current deployment</label><br />[[currentDeployment.uuid]]&nbsp;</span>
+            <paper-dropdown-menu label="Active deployment" vertical-align="bottom">
+              <paper-listbox class="dropdown-content">
+                <template is="dom-repeat" items="{{deployments}}">
+                  <paper-item>[[item.uuid]]</paper-item>
+                </template>
+              </paper-listbox>
+            </paper-dropdown-menu>
             <span class=""></span>
             <template is="dom-if" if="{{currentComponent}}">
               <paper-button on-tap="saveCurrentComponent" disabled="[[!dirty]]"><iron-icon icon="save"></iron-icon>Save</paper-button>
@@ -197,7 +303,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <!-- Deployment progress dialog -->
     <deployment-progress-dialog modal action="[[deployAction]]" current="[[deployCurrent]]" stepper="[[deployStepper]]" id="deploymentProgress"></deployment-progress-dialog>
-
     <paper-dialog modal id="confirmDeletion" no-cancel-on-esc-key="false" style="height: 200px;">
       <div>
       <h2>Delete Component</h2>

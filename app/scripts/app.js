@@ -19,6 +19,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   // Sets app default base URL
   app.baseUrl = '/';
   app.schemas = {};
+  app.noCurrentComponent = true;
   if (window.location.port === '') {  // if production
     // Uncomment app.baseURL below and
     // set app.baseURL to '/your-pathname/' if running from folder in production
@@ -85,6 +86,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
     this.$.ajax.generateRequest().completes.then( () => {
       app.currentComponent = undefined;
+      app.noCurrentComponent = true;
       this.refresh();
     }, () => {
       app.$.toast.text = 'An error occurs';
@@ -94,6 +96,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   app.onGetDeployments = function (evt) {
     var deployments = evt.target.lastResponse;
+    console.log(deployments);
     if (deployments === undefined) {
       deployments = [];
     } else {
@@ -102,7 +105,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         deployments[i]._name = deployments[i].uuid;
       }
     }
-    deployments.splice(0,0,{"uuid":"Global","_type": "Configuration","_name": "Global","params":app.config.global.params});
+    //deployments.splice(0,0,{"uuid":"Global","_type": "Configuration","_name": "Global","params":app.config.global.params});
     app.deployments = deployments;
   }
   /*
@@ -146,6 +149,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   app.resetComponent = function() {
     app.currentComponent = undefined;
+    app.noCurrentComponent = true;
+    app.selectedIndex = -1;
+    app.newEnable = app.route !== 'configuration';
   }
 
   app.mapServices = function(evt) {
@@ -164,6 +170,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
   app.selectComponent = function( component ) {
+    app.noCurrentComponent = false;
     // Duplicate the original component to be able to modify it
     app.currentComponent = JSON.parse(JSON.stringify(component));
     // Not yet ready, need to improve the fire change on editor ( dont fire them if component is detached )
@@ -173,6 +180,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   app.onSelectDeployment = function(evt) {
     var index = app.getAttribute('dataIndex', evt.target);
     if (index !== undefined) {
+      app.selectedIndex = index;
       app.selectComponent(app.deployments[index]);
     }
   }
@@ -181,6 +189,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var customModels = [];
     app.models.forEach((item) => {if (!item.builtin) customModels.push(item)})
     if (index !== undefined) {
+      app.selectedIndex = index;
       customModels[index]._type = 'Model';
       customModels[index]._name = customModels[index].name;
       app.selectComponent(customModels[index]);
@@ -191,6 +200,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var index = app.getAttribute('dataIndex', evt.target);
     if (index !== undefined) {
       var route = app.routes[index];
+      app.selectedIndex = index;
       if (app.mapServices[route.executor] !== undefined) {
         app.selectComponent(app.mapServices[route.executor]);
       } else {
@@ -201,6 +211,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   app.onSelectService = function(evt) {
     var index = app.getAttribute('dataIndex', evt.target);
     if (index !== undefined) {
+      app.selectedIndex = index;
       app.selectComponent(app.services[index]);
     }
   };
@@ -282,7 +293,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   /*****/
 
   app.getRouteLabel = function (label) {
-    var labels = {'routes': 'Routes', 'services': 'Services', 'deployments': 'Deployments', 'models': 'Models'};
+    var labels = {'routes': 'Routes', 'services': 'Services', 'deployments': 'Deployments', 'models': 'Models', 'configuration': 'Configuration'};
     return labels[label];
   }
   app.displayInstalledToast = function() {

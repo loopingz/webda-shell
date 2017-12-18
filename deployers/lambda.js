@@ -731,7 +731,7 @@ class AWSDeployer extends Deployer {
   static getModda() {
     return {
       "uuid": "aws",
-      "label": "AWS",
+      "label": "Lambda",
       "description": "Deploy on Lambda, map it with API Gateway",
       "webcomponents": [],
       "logo": "images/placeholders/aws.png",

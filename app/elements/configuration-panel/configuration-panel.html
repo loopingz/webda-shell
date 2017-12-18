@@ -16,7 +16,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <template>
     <style include="shared-styles">
     </style>
-    <label>Configuration</label>
+    <label>[[label]]</label>
     <juicy-jsoneditor mode="tree" modes=["view","tree","text","form"] json="{{component.params}}"></juicy-jsoneditor>
   </template>
 
@@ -27,6 +27,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       Polymer({
         is: 'configuration-panel',
         properties: {
+          label: {
+            type: String,
+            value: 'Configuraiton'
+          },
           dirty: {
             type: Boolean,
             value: false,

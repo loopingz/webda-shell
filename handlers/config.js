@@ -228,7 +228,6 @@ class ` + className + ` extends ` + extendName + ` {
       if (model != null || fs.existsSync(file)) {
         throw 409;
       }
-
       fs.writeFileSync(file, this._getClass(name, ctx.body.extending, ctx.body.templating, models));
       this.save();
     } else if (ctx._route._http.method === "PUT") {
@@ -382,6 +381,7 @@ class ` + className + ` extends ` + extendName + ` {
         deployments.sort(function (a, b) {
           return a._name.localeCompare(b._name);
         });
+        /*
         deployments.splice(0, 0, {
           "uuid": "Global",
           "_type": "Configuration",
@@ -389,6 +389,7 @@ class ` + className + ` extends ` + extendName + ` {
           "params": this._config.global.params
         });
         this._depoyments["Global"] = true;
+        */
         ctx.write(deployments);
       });
     } else if (ctx._route._http.method == "POST") {
@@ -437,7 +438,8 @@ class WebdaConfigurationServer extends WebdaServer {
     this.initAll();
     this._vhost = 'localhost';
     this._deployers = {};
-    this._deployers["aws"] = require("../deployers/aws");
+    this._deployers["lambda"] = require("../deployers/lambda");
+    this._deployers["s3"] = require("../deployers/s3");
     this._deployers["docker"] = require("../deployers/docker");
     this._deployers["shell"] = require("../deployers/shell");
     this._deployers["wedeploy"] = require("../deployers/wedeploy");

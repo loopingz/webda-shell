@@ -318,6 +318,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <!-- Deployment progress dialog -->
     <deployment-progress-dialog modal action="[[deployAction]]" current="[[deployCurrent]]" stepper="[[deployStepper]]" id="deploymentProgress"></deployment-progress-dialog>
+    <paper-dialog modal id="newDeploymentGroupDialog" no-cancel-on-esc-key="false" style="height: 200px;">
+      <div>
+      <h2>New Deployment Group</h2>
+      <div style="margin-top: 20px;">
+        <paper-input label="Name"></paper-input>
+      </div>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button dialog-confirm class="primary">Create</paper-button>
+      </div>
+      </div>
+    </paper-dialog>
     <paper-dialog modal id="confirmDeletion" no-cancel-on-esc-key="false" style="height: 200px;">
       <div>
       <h2>Delete Component</h2>

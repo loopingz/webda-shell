@@ -54,13 +54,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     });
   }
 
+  app.newDeployment = function() {
+    app.$.newDeployment.open();
+  }
+
   app.newObject = function () {
     if (app.route == "routes") {
       app.$.newRouteDialog.open();
     } else if (app.route == "services") {
       app.$.newServiceDialog.open();
     } else if (app.route == "deployments") {
-      app.$.newDeploymentDialog.open();
+      app.$.newDeploymentGroupDialog.open();
     } else if (app.route == "models") {
       app.$.newModelDialog.open();
     }

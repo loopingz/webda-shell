@@ -26,7 +26,6 @@ class ConfigurationService extends Executor {
       "_method": this.crudRoute
     });
     this._addRoute('/api/moddas', {"method": ["GET"], "executor": this._name, "_method": this.getModdas});
-    this._addRoute('/api/configurations/Global', {"method": ["PUT"], "executor": this._name, "_method": this.updateGlobal});
     this._addRoute('/api/deployers', {"method": ["GET"], "executor": this._name, "_method": this.getDeployers});
     this._addRoute('/api/deployments', {"method": ["GET", "POST"], "executor": this._name, "_method": this.restDeployment});
     this._addRoute('/api/deployments/{name}', {
@@ -36,8 +35,7 @@ class ConfigurationService extends Executor {
     });
     this._addRoute('/api/versions', {"method": ["GET"], "executor": this._name, "_method": this.versions});
     this._addRoute('/api/deploy/{name}', {"method": ["GET"], "executor": this._name, "_method": this.deploy});
-    this._addRoute('/api/config', {"method": ["GET"], "executor": this._name, "_method": this.getConfig});
-    this._addRoute('/api/config', {"method": ["PUT"], "executor": this._name, "_method": this.updateCurrentVhost});
+    this._addRoute('/api/global', {"method": ["GET", "PUT"], "executor": this._name, "_method": this.restGlobal});
     this._addRoute('/api/browse/{path}', {
       "method": ["GET", "PUT", "DELETE"],
       "executor": this._name,
@@ -110,11 +108,6 @@ class ConfigurationService extends Executor {
       fs.unlinkSync(path);
       return;
     }
-  }
-
-  updateGlobal(ctx) {
-    this._config.parameters = ctx.body.parameters;
-    this.save();
   }
 
   _getModels() {
@@ -354,12 +347,20 @@ class ` + className + ` extends ` + extendName + ` {
     this.save();
   }
 
-  getConfig(ctx) {
-    ctx.write(this._webda.config);
+  restGlobal(ctx) {
+    if (ctx._route._http.method === "GET") {
+      return this.getGlobal(ctx);
+    } else if (ctx._route._http.method === "PUT") {
+      return this.updateGlobal(ctx);
+    }
+  }
+  getGlobal(ctx) {
+    ctx.write(this._webda.config.parameters);
   }
 
   updateConfig() {
-    // For later use
+    this._config.parameters = ctx.body.parameters;
+    this.save();
   }
 
   restDeployment(ctx) {

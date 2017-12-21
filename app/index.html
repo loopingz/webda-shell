@@ -233,14 +233,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <iron-icon icon="build"></iron-icon>
                   <h2>Configuration</h2>
                   <br />
-                  <configuration-panel label="Global Configuration" component="{{app.configComponent}}"></configuration-panel>
+                  <configuration-panel label="Global Configuration" component="{{configComponent}}" mode="{{juicyMode}}"></configuration-panel>
                   <p></p>
                   <div class="configurationSelectors">
                     <p>Choose a Deployment</p>
                     <p>Choose a Service</p>
                   </div>
                   <p>
-                    <configuration-panel label="Resolved Configuration"></configuration-panel>
+                    <configuration-panel label="Resolved Configuration" mode="{{juicyMode}}"></configuration-panel>
                   </p>
                 </div>
               </div>
@@ -252,16 +252,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <deployment-panel component="{{currentComponent}}" dirty="{{dirty}}"></deployment-panel>
               </section>
               <section data-type="Configuration">
-                <configuration-panel component="{{currentComponent}}" dirty="{{dirty}}"></configuration-panel>
+                <configuration-panel component="{{currentComponent}}" dirty="{{dirty}}" mode="{{juicyMode}}"></configuration-panel>
               </section>
               <section data-type="Service">
-                <service-panel component="{{currentComponent}}" dirty="{{dirty}}" models="[[models]]"></service-panel>
+                <service-panel component="{{currentComponent}}" dirty="{{dirty}}" models="[[models]]" mode="{{juicyMode}}"></service-panel>
               </section>
               <section data-type="Model">
                 <model-panel component="{{currentComponent}}" dirty="{{dirty}}"></model-panel>
               </section>
               <section data-type="Route">
-                <route-panel id="routeComponent" component="{{currentComponent}}" dirty="{{dirty}}"></route-panel>                
+                <route-panel id="routeComponent" component="{{currentComponent}}" dirty="{{dirty}}" mode="{{juicyMode}}"></route-panel>
               </section>
               <section data-type="Welcome">
               </section>
@@ -270,7 +270,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
       </paper-scroll-header-panel>
       <div main>
-          <paper-toolbar main style="position: absolute; bottom: 0px; right: 0px; left: 0px; background-color: #eee; border-top: 1px solid #ccc; color:#000;">
+          <paper-toolbar main justify="justified" style="position: absolute; bottom: 0px; right: 0px; left: 0px; background-color: #eee; border-top: 1px solid #ccc; color:#000;">
             <template is="dom-if" if="{{currentComponent}}">
               <paper-button on-tap="confirmDeleteCurrentComponent"><iron-icon icon="delete" style="color: #dc6262;"></iron-icon></paper-button>
             </template>
@@ -279,12 +279,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </template>
             <paper-dropdown-menu label="Active deployment" vertical-align="bottom">
               <paper-listbox class="dropdown-content">
+                <paper-item><i>No deployment</i></paper-item>
                 <template is="dom-repeat" items="{{deployments}}">
                   <paper-item>[[item.uuid]]</paper-item>
                 </template>
               </paper-listbox>
             </paper-dropdown-menu>
-            <span class="spacer"></span>
             <paper-button on-tap="saveCurrentComponent" disabled="[[!dirty]]"><iron-icon icon="save"></iron-icon>Save</paper-button>
           </paper-toolbar>
         </div>

@@ -230,7 +230,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
   app.handleConfig = function (evt) {
-    app.configComponent = evt.target.lastResponse;
+    app.configComponent = {parameters: evt.target.lastResponse};
   }
 
 
@@ -297,7 +297,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   // See https://github.com/Polymer/polymer/issues/1381
   window.addEventListener('WebComponentsReady', function() {
     // Fire all network :)
-    app.$.configAjax.url = app.getUrl('/configs');
+    app.$.configAjax.url = app.getUrl('/global');
     app.$.versionsAjax.url = app.getUrl('/versions');
     app.$.deploymentsAjax.url = app.getUrl('/deployments');
     app.$.servicesAjax.url = app.getUrl('/services');

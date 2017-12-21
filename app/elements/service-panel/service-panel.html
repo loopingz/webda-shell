@@ -34,7 +34,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
     <paper-icon-button icon="list" title="View full parameters" on-tap="showFull" style="float:right; margin-top: -16px;"></paper-icon-button>
     <label>Configuration</label>
-    <juicy-jsoneditor id="params" mode="tree" modes=["view","tree","text","form"] json="{{params}}"></juicy-jsoneditor>
+    <juicy-jsoneditor id="params" mode="{{juicyMode}}" modes=["view","tree","text","form"] json="{{params}}"></juicy-jsoneditor>
     [[errors]]
   </template>
 
@@ -203,6 +203,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
         },
         properties: {
+          mode: {
+            type: String,
+            value: 'tree'
+          },
           methods: {
             type: Array,
             observer: '_exposeUpdate'

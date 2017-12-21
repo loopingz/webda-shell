@@ -133,7 +133,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               this.errors = undefined;
               this.toggleClass('invalid', false, this.$.params);
             } else {
-              console.log('this is not valid', app.ajv.errorsText());
               this.errors = 'Configuration' + app.ajv.errorsText().substr(4);
               this.toggleClass('invalid', true, this.$.params);
             }
@@ -205,7 +204,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         properties: {
           mode: {
             type: String,
-            value: 'tree'
+            value: 'tree',
+            notify: true
+          },
+          currentDeployment: {
+            type: Object,
+            observer: 'validate'
           },
           methods: {
             type: Array,

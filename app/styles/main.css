@@ -23,13 +23,15 @@ body {
 	border-color: #f00 !important;	
 }
 
+.readonly .jsoneditor .menu,
 .unknown .jsoneditor .menu {
-	background-color: #ffd9a3 !important;
-	border-color: #ff9900 !important;
+	background-color: #ddd !important;
+	border-color: #ddd !important;
 }
 
+.readonly .jsoneditor,
 .unknown .jsoneditor {
-	border-color: #ff9900 !important;	
+	border-color: #ddd !important;	
 }
 
 

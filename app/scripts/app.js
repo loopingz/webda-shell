@@ -20,6 +20,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   app.baseUrl = '/';
   app.schemas = {};
   app.noCurrentComponent = true;
+  app.activeDeployment = "";
+  app.resolvedComponent = {parameters: {}};
   if (window.location.port === '') {  // if production
     // Uncomment app.baseURL below and
     // set app.baseURL to '/your-pathname/' if running from folder in production
@@ -63,6 +65,40 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       app.$.newModelDialog.open();
     }
   }
+
+  window.addEventListener('iron-select', (evt) => {
+    if (evt.detail &&
+        evt.detail.item && 
+        evt.detail.item.parentElement &&
+        evt.detail.item.parentElement.classList &&
+        evt.detail.item.parentElement.classList.contains('serviceSelector') &&
+        app.deployments) {
+      app.currentService = undefined;
+      app.services.forEach( (service) => {
+        if (service._name === app.activeService) {
+          app.currentService = service;
+        }
+      });
+      app.resolvedComponent = {parameters: app.getRealConfiguration(app.currentService)};
+      console.log(app.resolvedComponent);
+    }
+    if (evt.detail &&
+        evt.detail.item && 
+        evt.detail.item.parentElement &&
+        evt.detail.item.parentElement.classList &&
+        evt.detail.item.parentElement.classList.contains('deploymentSelector') &&
+        app.deployments) {
+      app.currentDeployment = undefined;
+      app.deployments.forEach( (deployment) => {
+        if (deployment.uuid === app.activeDeployment) {
+          app.currentDeployment = deployment;
+        }
+      });
+      app.resolvedComponent = {parameters: app.getRealConfiguration(app.currentService)};
+      console.log(app.resolvedComponent);
+    }
+  });
+
 
   app.confirmDeleteCurrentComponent = function () {
     if (app.currentComponent === undefined || app.currentComponent._type === undefined) return;
@@ -231,6 +267,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   app.handleConfig = function (evt) {
     app.configComponent = {parameters: evt.target.lastResponse};
+    app.resolvedComponent = {parameters: evt.target.lastResponse};
   }
 
 
@@ -247,8 +284,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     // Load the schemas for each moddas
     for (let i in app.moddas) {
-      app.schemas[app.moddas[i].uuid]=true;
-      app.ajv.addSchema(app.moddas[i].configuration.schema, app.moddas[i].uuid);
+      if (!app.moddas[i].configuration.schema) continue;
+      try {
+        app.schemas[app.moddas[i].uuid]=true;
+        app.ajv.addSchema(app.moddas[i].configuration.schema, app.moddas[i].uuid);
+      } catch (ex) {
+        console.log('Error loading modda', app.moddas[i].uuid,app.moddas[i].configuration.schema, ex);
+      }
     }
     
   }
@@ -264,10 +306,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   app.getRealConfiguration = function(params) {
     // First take Global params
-    var res = app._extend({}, app.deployments[0].params);
+    var res = app._extend({}, app.configComponent.parameters);
     // Add or replace the one from the deployment
     if (app.currentDeployment) {
-      app._extend(res, app.currentDeployment.params);
+      app._extend(res, app.currentDeployment.parameters);
+    }
+    if (!params) {
+      return res;
     }
     // Then take the local one
     app._extend(res, params);
@@ -275,7 +320,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   app.currentDeployment.services && app.currentDeployment.services[params._name]) {
       res = merge.recursive(true, res, app.currentDeployment.services[params._name]);
     }
-    return res;
+    let filtered = {};
+    for (let i in res) {
+      if (i.startsWith('_')) continue;
+      filtered[i] = res[i];
+    }
+    return filtered;
   }
 
   /********/

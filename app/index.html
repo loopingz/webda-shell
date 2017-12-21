@@ -236,11 +236,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <configuration-panel label="Global Configuration" component="{{configComponent}}" mode="{{juicyMode}}"></configuration-panel>
                   <p></p>
                   <div class="configurationSelectors">
-                    <p>Choose a Deployment</p>
-                    <p>Choose a Service</p>
+                    <paper-dropdown-menu label="Active deployment" vertical-align="bottom">
+                      <paper-listbox class="dropdown-content deploymentSelector" attr-for-selected="uuid" selected="{{activeDeployment}}">
+                        <paper-item uuid=""><i>No deployment</i></paper-item>
+                        <template is="dom-repeat" items="{{deployments}}">
+                          <paper-item uuid="[[item.uuid]]">[[item.uuid]]</paper-item>
+                        </template>
+                      </paper-listbox>
+                    </paper-dropdown-menu>
+                    <paper-dropdown-menu label="Active service" vertical-align="bottom">
+                      <paper-listbox class="dropdown-content serviceSelector" attr-for-selected="uuid" selected="{{activeService}}">
+                        <paper-item uuid=""><i>No service</i></paper-item>
+                        <template is="dom-repeat" items="{{services}}">
+                          <paper-item uuid="[[item._name]]">[[item._name]]</paper-item>
+                        </template>
+                      </paper-listbox>
+                    </paper-dropdown-menu>
                   </div>
                   <p>
-                    <configuration-panel label="Resolved Configuration" mode="{{juicyMode}}"></configuration-panel>
+                    <configuration-panel  component="{{resolvedComponent}}" label="Resolved Configuration" read-only id="computedConfiguration"></configuration-panel>
                   </p>
                 </div>
               </div>
@@ -255,13 +269,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <configuration-panel component="{{currentComponent}}" dirty="{{dirty}}" mode="{{juicyMode}}"></configuration-panel>
               </section>
               <section data-type="Service">
-                <service-panel component="{{currentComponent}}" dirty="{{dirty}}" models="[[models]]" mode="{{juicyMode}}"></service-panel>
+                <service-panel component="{{currentComponent}}" dirty="{{dirty}}" models="[[models]]" current-deployment="{{currentDeployment}}" mode="{{juicyMode}}"></service-panel>
               </section>
               <section data-type="Model">
                 <model-panel component="{{currentComponent}}" dirty="{{dirty}}"></model-panel>
               </section>
               <section data-type="Route">
-                <route-panel id="routeComponent" component="{{currentComponent}}" dirty="{{dirty}}" mode="{{juicyMode}}"></route-panel>
+                <route-panel id="routeComponent" component="{{currentComponent}}" dirty="{{dirty}}" mode="{{juicyMode}}" current-deployment="{{currentDeployment}}"></route-panel>
               </section>
               <section data-type="Welcome">
               </section>
@@ -278,10 +292,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <div style="width: 91px;">&nbsp;</div>
             </template>
             <paper-dropdown-menu label="Active deployment" vertical-align="bottom">
-              <paper-listbox class="dropdown-content">
-                <paper-item><i>No deployment</i></paper-item>
+              <paper-listbox class="dropdown-content deploymentSelector" attr-for-selected="uuid" selected="{{activeDeployment}}">
+                <paper-item uuid=""><i>No deployment</i></paper-item>
                 <template is="dom-repeat" items="{{deployments}}">
-                  <paper-item>[[item.uuid]]</paper-item>
+                  <paper-item uuid="[[item.uuid]]">[[item.uuid]]</paper-item>
                 </template>
               </paper-listbox>
             </paper-dropdown-menu>

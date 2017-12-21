@@ -128,7 +128,6 @@ class ConfigurationService extends Executor {
   }
 
   _getClass(name, extending, templating, models) {
-    console.log(name, extending, templating, models);
     let className = name.split('/').pop();
     let extendName = extending.split('/').pop();
     let requireFile;
@@ -304,7 +303,6 @@ class ` + className + ` extends ` + extendName + ` {
     this._config.routes = this._config.routes || {};
     if (ctx._route._http.method === "GET") {
       var routes = [];
-      console.log(this._computeConfig.routes);
       for (let i in this._computeConfig.routes) {
         let route = this._computeConfig.routes[i];
         route._name = i;
@@ -624,22 +622,17 @@ class WebdaConfigurationServer extends WebdaServer {
 
   websocket(port) {
     // WebSocket server - used for status on deployment only
+    // Should move to the integrated websocket - move to socket.io
     var ws = require("nodejs-websocket")
     this.conns = [];
     // Scream server example: "hi" -> "HI!!!"
     var server = ws.createServer((conn) => {
-      console.log("New connection");
       this.conns.push(conn);
 
-      conn.on("text", (str) => {
-        console.log("Received " + str)
-        conn.sendText(str.toUpperCase() + "!!!")
-      });
       conn.on("error", (err) => {
         console.log("Connection error", err);
       });
       conn.on("close", (code, reason) => {
-        console.log("Connection closed");
         if (this.conns.indexOf(conn) >= 0) {
           this.conns.splice(this.conns.indexOf(conn), 1);
         }

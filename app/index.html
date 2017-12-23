@@ -183,6 +183,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <h2>Services</h2>
                   <p>This is the most structured way to create new API in Webda</p>
                   <p>Like a Spring service, it should handle behaviors.</p>
+                  <p>Service parameters are injected by Webda from the Configuration setup</p>
                   <p><b>Worker</b> implements some continous job that would run .</p>
                   <p><a href="https://webda.io/docs/develop/" target="_blank">Learn More</a></p>
                   <p></p>
@@ -263,7 +264,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <template is="dom-if" if="{{currentComponent}}">
             <iron-pages attr-for-selected="data-type" selected="{{currentComponent._type}}" fallback-selection="Welcome">
               <section data-type="Deployment">
-                <deployment-panel component="{{currentComponent}}" dirty="{{dirty}}"></deployment-panel>
+                <deployment-panel component="{{currentComponent}}" dirty="{{dirty}}" services="{{services}}"></deployment-panel>
               </section>
               <section data-type="Configuration">
                 <configuration-panel component="{{currentComponent}}" dirty="{{dirty}}" mode="{{juicyMode}}"></configuration-panel>

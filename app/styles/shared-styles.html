@@ -8,9 +8,18 @@
       .page-title {
         @apply(--paper-font-display2);
       }
+      paper-scroll-header-panel {
+        --paper-scroll-header-container: {
+          bottom: 64px;
+        };
+      }
       paper-button.primary {
-        background-color: var(--accent-color);
+        background-color: var(--webda-yellow);
         color: white;
+      }
+      paper-button.primary[disabled] {
+        background-color: var(--webda-yellow-light-2);
+        color: #999;
       }
       paper-menu a > *, paper-menu paper-item > *, paper-menu paper-icon-item > * {
         pointer-events: none;
@@ -108,7 +117,7 @@
         @apply(--layout-horizontal);
         @apply(--layout-around-justified);
       }
-          
+
       paper-tabs {
         --paper-tabs-selection-bar-color: var(--webda-yellow);
       }

@@ -10,6 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/paper-styles/typography.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
 
 <dom-module id="deployment-panel">
@@ -53,6 +54,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       padding: 10px;
       margin-bottom: 20px;
     }
+    div[subroute='units'] > div {
+      @apply(--layout-horizontal);
+    }
+    div[subroute='units'] > div > div:last-child {
+      border-left: 1px solid #ccc;
+      width: 36%;
+      bottom: 0px;
+      top: 117px;
+      position: absolute;
+      right: 0px;
+      overflow-y: scroll;
+    }
+    div[subroute='units'] {
+      padding: 0px !important;
+      margin-top: -20px;
+      bottom: 0;
+    }
+    div[subroute='units'] paper-listbox {
+      background: transparent;
+    }
     </style>
     <paper-tabs attr-for-selected="subroute" selected="{{subroute}}" noink>
       <paper-tab subroute='configuration'><iron-icon icon="build"></iron-icon>Configuration</paper-tab>
@@ -73,27 +94,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <juicy-jsoneditor mode="{{juicyMode}}" modes=["view","tree","text","form"] json="{{component.resources}}"></juicy-jsoneditor>
       </div>
       <div subroute='units'>
-        <paper-tabs attr-for-selected="unit" selected="{{selectedUnit}}" scrollable>
-          <paper-tab><iron-icon icon="help"></iron-icon>S3</paper-tab>
-          <paper-tab><iron-icon icon="add"></iron-icon></paper-tab>
-        </paper-tabs>
-        <template is="dom-if" if="[[activeUnit]]">
-          <div id="unitConfiguration">
-            <label>Unit resources</label>
-            <juicy-jsoneditor mode="{{juicyMode}}" modes=["view","tree","text","form"] json="{{activeUnit}}"></juicy-jsoneditor>
+        <div>
+          <div style="width: 66%">
+          <template is="dom-if" if="[[activeUnit]]">
+            <div id="unitConfiguration">
+              <label>Unit resources</label>
+              <juicy-jsoneditor mode="{{juicyMode}}" modes=["view","tree","text","form"] json="{{activeUnit}}"></juicy-jsoneditor>
+            </div>
+          </template>
+          <template is="dom-if" if="![[activeUnit]]">
+            <div>
+              <p>Deployment unit let you deploy into several environment parts of the application</p>
+              <p>Click on the <iron-icon icon="add"></iron-icon> to add a new unit or on an existing one to configure it</p>
+              <a href="">Learn More</a>
+            </div>
+          </template>
           </div>
-        </template>
-        <template is="dom-if" if="![[activeUnit]]">
           <div>
-            <p>Deployment unit let you deploy into several environment parts of the application</p>
-            <p>Click on the <iron-icon icon="add"></iron-icon> to add a new unit or on an existing one to configure it</p>
-            <a href="">Learn More</a>
+            <paper-listbox>
+              <template is="dom-repeat" items="[[component.units]]">
+                <paper-icon-item><iron-icon src="[[item._icon]]" item-icon></iron-icon>[[item._name]]</paper-icon-item>
+              </template>
+              <paper-icon-item on-tap="_addUnit"><iron-icon icon="add" item-icon></iron-icon>Add new deployment unit</paper-icon-item>
+            </paper-listbox>
           </div>
-        </template>
-        <paper-button on-tap="deploy" style="float: right; margin-right: 20px;" raised class="primary">Deploy</paper-button>
+        </div>
       </div>
     </iron-pages>
     <iron-ajax id="ajax" handle-as="json"></iron-ajax>
+    <new-deployment-dialog modal id="newDeploymentDialog" deployers="[[deployers]]"></new-deployment-dialog>
   </template>
 
   <script>
@@ -105,6 +134,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         deploy: function () {
           app.fire('deploy', this.component.uuid);
         },
+        _addUnit: function() {
+          this.$.newDeploymentDialog.open();
+        },
         setActive: function() {
           if (this.active) {
             app.currentDeployment = this.component;  
@@ -115,13 +147,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         updateActive: function() {
           this.active = (app.currentDeployment && this.component && app.currentDeployment._name == this.component._name);
           if (!this.component) return;
-          if (!this.component.services) {
-            this.component.services = {};
-          }
+          this.component.services = this.component.services || {};
+          this.component.units = this.component.units || {};
           this.services.forEach( (service) => {
-            if (!this.component.services[service._name]) {
-              this.component.services[service._name] = {};
-            }
+            this.component.services[service._name] = this.component.services[service._name] || {};
           });
         },
         properties: {
@@ -140,6 +169,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             type: Boolean,
             value: false,
             readonly: true
+          },
+          deployers: {
+            type: Object
           },
           component: {
             type: Object,

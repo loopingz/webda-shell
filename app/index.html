@@ -145,7 +145,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <!-- Main Toolbar -->
         <paper-toolbar id="mainToolbar">
           <paper-icon-button id="paperToggle" icon="menu" paper-drawer-toggle></paper-icon-button>
-          <paper-tabs attr-for-selected="data-route" selected="{{route}}" noink on-iron-select="resetComponent">
+          <paper-tabs id="mainMenu" attr-for-selected="data-route" selected="{{route}}" noink on-iron-select="resetComponent">
             <paper-tab data-route="services"><iron-icon icon="extension"></iron-icon>Services</paper-tab>
             <paper-tab data-route="models"><iron-icon icon="class"></iron-icon>Models</paper-tab>
             <paper-tab data-route="routes"><iron-icon icon="explore"></iron-icon>Routes</paper-tab>
@@ -158,7 +158,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </paper-toolbar>
 
         <!-- Main Content -->
-        <div class="content" style="margin-bottom: 150px;">
+        <div class="content" style="margin-bottom: 80px;">
           <div>
             <div style="float: right; margin-bottom: -150px; margin-top: 20px;">{{currentComponent._type}}</div>
             <h2>{{currentComponent._name}}</h2>
@@ -264,7 +264,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <template is="dom-if" if="{{currentComponent}}">
             <iron-pages attr-for-selected="data-type" selected="{{currentComponent._type}}" fallback-selection="Welcome">
               <section data-type="Deployment">
-                <deployment-panel component="{{currentComponent}}" dirty="{{dirty}}" services="{{services}}"></deployment-panel>
+                <deployment-panel deployers="{{deployers}}" canDeploy="{{canDeploy}}" component="{{currentComponent}}" dirty="{{dirty}}" services="{{services}}"></deployment-panel>
               </section>
               <section data-type="Configuration">
                 <configuration-panel component="{{currentComponent}}" dirty="{{dirty}}" mode="{{juicyMode}}"></configuration-panel>
@@ -292,21 +292,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <template is="dom-if" if="{{noCurrentComponent}}">
               <div style="width: 91px;">&nbsp;</div>
             </template>
-            <paper-dropdown-menu label="Active deployment" vertical-align="bottom">
-              <paper-listbox class="dropdown-content deploymentSelector" attr-for-selected="uuid" selected="{{activeDeployment}}">
-                <paper-item uuid=""><i>No deployment</i></paper-item>
-                <template is="dom-repeat" items="{{deployments}}">
-                  <paper-item uuid="[[item.uuid]]">[[item.uuid]]</paper-item>
-                </template>
-              </paper-listbox>
-            </paper-dropdown-menu>
+            <template is="dom-if" if="{{deployButton}}">
+              <paper-button on-tap="deploy" class="primary" disabled="{{!canDeploy}}">Deploy</paper-button>
+            </template>
+            <template is="dom-if" if="{{!deployButton}}">
+              <paper-dropdown-menu label="Active deployment" vertical-align="bottom">
+                <paper-listbox class="dropdown-content deploymentSelector" attr-for-selected="uuid" selected="{{activeDeployment}}">
+                  <paper-item uuid=""><i>No deployment</i></paper-item>
+                  <template is="dom-repeat" items="{{deployments}}">
+                    <paper-item uuid="[[item.uuid]]">[[item.uuid]]</paper-item>
+                  </template>
+                </paper-listbox>
+              </paper-dropdown-menu>
+            </template>
             <paper-button on-tap="saveCurrentComponent" disabled="[[!dirty]]"><iron-icon icon="save"></iron-icon>Save</paper-button>
           </paper-toolbar>
         </div>
     </paper-drawer-panel>
     <new-route-dialog modal id="newRouteDialog"></new-route-dialog>
     <new-service-dialog modal id="newServiceDialog" moddas="[[moddas]]"></new-service-dialog>
-    <new-deployment-dialog modal id="newDeploymentDialog" deployers="[[deployers]]"></new-deployment-dialog>
     <new-model-dialog modal id="newModelDialog" models="[[models]]"></new-model-dialog>
     <paper-dialog modal id="displayJsonDialog" style="width: 95%;min-height: 95%;">
     <h2>Resolved parameters</h2>

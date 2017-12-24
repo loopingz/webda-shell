@@ -19,6 +19,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   // Sets app default base URL
   app.baseUrl = '/';
   app.schemas = {};
+  app.canDeploy = false;
+  app.deployButton = false;
   app.noCurrentComponent = true;
   app.activeDeployment = "";
   app.resolvedComponent = {parameters: {}};
@@ -222,6 +224,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     if (index !== undefined) {
       app.selectedIndex = index;
       app.selectComponent(app.deployments[index]);
+      app.canDeploy = true;
+    } else {
+      app.canDeploy = false;
     }
   }
   app.onSelectModel = function(evt) {
@@ -359,6 +364,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     app.$.moddasAjax.url = app.getUrl('/moddas');
     app.$.deployersAjax.url = app.getUrl('/deployers');
     app.$.modelsAjax.url = app.getUrl('/models');
+    app.$.mainMenu.addEventListener('iron-select', (evt) => {
+      app.deployButton = app.route === 'deployments';
+      app.canDeploy = false;
+    });
     
     app.connect();
 

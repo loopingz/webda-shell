@@ -63,6 +63,10 @@ class S3Deployer extends Deployer {
       "description": "Deploy a S3 public website",
       "webcomponents": [],
       "logo": "images/placeholders/wedeploy.png",
+      "configurationWidget": {
+        "tag": "webda-s3-deployer",
+        "url": "elements/deployers/webda-s3-deployer.html"
+      },
       "configuration": {
         "default": {
           "params": {},

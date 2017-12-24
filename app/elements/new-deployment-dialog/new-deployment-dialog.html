@@ -10,6 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/paper-styles/typography.html">
+<link rel="import" href="../../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../url-method-selector/url-method-selector.html">
 <dom-module id="new-deployment-dialog">
   <template>
@@ -37,8 +38,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         border-top: 1px solid var(--light-primary-color);
       }
       paper-dialog-scrollable {
-        margin-bottom: 48px;
-        min-height: 90%;
+        position: fixed;
+        bottom: 68px;
+        left: 50px;
+        top: 50px;
+        right: 50px;
       }
       .paper-dialog-scrollable-0.can-scroll:not(.scrolled-to-bottom):not(:last-child)::after {
         background: none;
@@ -70,6 +74,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
     <style include="paper-dialog-shared-styles"></style>
       <h2>New Deployment</h2>
+      <paper-dialog-scrollable>
       <paper-input label="Name" value="{{name}}" placeholder="Enter deployment name"></paper-input>
       <div align="center" class="block-selector">
         <template is="dom-repeat" items="[[deployers]]">
@@ -80,6 +85,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </div>
       Type:[[configuration.type]]<br />
       Full:[[configuration]]<br />
+      <div id="configurationWidget"></div>
       <iron-pages attr-for-selected="data-type" selected="{{configuration.type}}">
         <section data-type="lambda">
           <paper-input value="{{configuration.arn}}" placeholder="arn:aws:lambda:us-west-2:277719386420:function:webda-test" label="Lambda Function ARN"></paper-input>
@@ -98,6 +104,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <paper-input placeholder="text/plain" value="{{route.params.mime}}" label="Content-Type"></paper-input>
         </section>
       </iron-pages>
+      </paper-dialog-scrollable>
       <div class="buttons">
         <span id="error">[[error]]</span>
         <paper-button dialog-dismiss>Cancel</paper-button>
@@ -153,6 +160,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.selected = this.deployers[target.id];
             this.configuration = JSON.parse(JSON.stringify(this.selected.configuration.default));
             console.log(this.configuration, this.deployers[target.id]);
+            this.deployer = this.deployers[target.id];
+
+            // Remove all previous configuration widget
+            while (this.$.configurationWidget.firstChild) {
+              this.$.configurationWidget.removeChild(this.$.configurationWidget.firstChild);
+            }
+
+            // Add configuration widget if exists
+            if (this.deployer && this.deployer.configurationWidget && this.deployer.configurationWidget.url) {
+              Polymer.Base.importHref(this.deployer.configurationWidget.url, (evt) => {
+                let child = window.document.createElement(this.deployer.configurationWidget.tag, {configuration: {}});
+                console.log(this.deployer.configurationWidget.tag, child, Polymer.dom(this.$.configurationWidget));
+                if (child) {
+                  Polymer.dom(this.$.configurationWidget).appendChild(child);
+                }
+              }); 
+            }
+
             this.configuration.type = this.deployers[target.id].uuid;
             if (this.old) {
               this.old.removeAttribute("selected");

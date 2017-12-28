@@ -7,6 +7,7 @@ const path = require("path");
 const Executor = require(__webda + "/services/executor");
 const Webda = require(__webda + "/core");
 const merge = require('merge');
+const Finder = require('fs-finder');
 
 class ConfigurationService extends Executor {
 
@@ -436,6 +437,8 @@ class WebdaConfigurationServer extends WebdaServer {
     this._deployers["docker"] = require("../deployers/docker");
     this._deployers["shell"] = require("../deployers/shell");
     this._deployers["wedeploy"] = require("../deployers/wedeploy");
+    var files = Finder.from('./node_modules').findFiles('webda.modda.json');
+    console.log('found moddas', JSON.stringify(files));
   }
 
   exportJson(o) {

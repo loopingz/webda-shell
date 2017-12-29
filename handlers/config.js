@@ -43,7 +43,6 @@ class ConfigurationService extends Executor {
       "_method": this.fileBrowser,
       'allowPath': true
     });
-    this._addRoute('/{path}', {"method": ["GET"], "executor": this._name, "_method": this.uiBrowser, 'allowPath': true});
     this.refresh();
   }
 
@@ -51,13 +50,6 @@ class ConfigurationService extends Executor {
     this._config = this._webda.config;
     this._computeConfig = this._webda.computeConfig;
     this._depoyments = {};
-  }
-
-  uiBrowser(ctx) {
-    if (ctx._params.path == undefined || ctx._params.path == '') {
-      ctx._params.path = "index.html";
-    }
-    this.fileBrowser(ctx, __dirname + "/../app/");
   }
 
   versions(ctx) {
@@ -369,7 +361,6 @@ class ` + className + ` extends ` + extendName + ` {
           // Clone the object for now
           this._depoyments[deployments[i].uuid] = true;
           deployments[i]._name = deployments[i].uuid;
-          deployments[i]._type = "Deployment";
         }
         deployments.sort(function (a, b) {
           return a._name.localeCompare(b._name);
@@ -413,13 +404,17 @@ var ServerConfig = {
       index: 'index.html'
     }
   },
+  models: {
+    "WebdaConfig/Deployment": __dirname + "/../models/deployment"
+  },
   services: {
     deployments: {
       expose: {},
       folder: './deployments',
       type: 'FileStore',
       lastUpdate: false,
-      beautify: ' '
+      beautify: ' ',
+      model: 'WebdaConfig/Deployment'
     },
     configuration: {
       require: ConfigurationService

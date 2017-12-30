@@ -103,7 +103,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
           </template>
           <template is="dom-if" if="![[activeUnit]]">
-            <div>
+            <div style="padding: 20px;">
               <p>Deployment unit let you deploy into several environment parts of the application</p>
               <p>Click on the <iron-icon icon="add"></iron-icon> to add a new unit or on an existing one to configure it</p>
               <a href="">Learn More</a>
@@ -113,7 +113,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <div>
             <paper-listbox>
               <template is="dom-repeat" items="[[component.units]]">
-                <paper-icon-item><iron-icon src="[[item._icon]]" item-icon></iron-icon>[[item._name]]</paper-icon-item>
+                <paper-icon-item on-tap="_selectUnit" unit="[[item]]"><iron-icon src="[[item._icon]]" item-icon></iron-icon>[[item.name]]</paper-icon-item>
               </template>
               <paper-icon-item on-tap="_addUnit"><iron-icon icon="add" item-icon></iron-icon>Add new deployment unit</paper-icon-item>
             </paper-listbox>
@@ -134,12 +134,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         deploy: function () {
           app.fire('deploy', this.component.uuid);
         },
+        ready: function() {
+          this.$.newDeploymentDialog.addEventListener('add-deployment-unit', (evt) => {
+            this.push('component.units', evt.detail);
+            this.dispatchEvent(new CustomEvent('webda-save-current-component', {bubbles: true, composed: true }));
+            console.log('pushed', evt.detail);
+          });
+        },
+        _selectUnit: function() {
+
+        },
         _addUnit: function() {
           this.$.newDeploymentDialog.open();
         },
         setActive: function() {
           if (this.active) {
-            app.currentDeployment = this.component;  
+            app.currentDeployment = this.component;
           } else {
             app.currentDeployment = undefined;
           }
@@ -147,8 +157,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         updateActive: function() {
           this.active = (app.currentDeployment && this.component && app.currentDeployment._name == this.component._name);
           if (!this.component) return;
-          this.component.services = this.component.services || {};
-          this.component.units = this.component.units || {};
+          if (this.component._type !== 'deployment') return;
+          console.log(this.component.parameters);
           this.services.forEach( (service) => {
             this.component.services[service._name] = this.component.services[service._name] || {};
           });

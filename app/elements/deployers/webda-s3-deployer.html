@@ -7,25 +7,26 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
-
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-styles/typography.html">
-<script>
-  console.log('webda-s3-deployer is loaded');
-</script>
 <dom-module id="webda-s3-deployer">
   <template>
     <style include="shared-styles">
       :host {
         display: block;
       }
+      paper-toggle-button {
+        margin-top: 10px;
+      }
     </style>
     <div>
-      This is a S3 deployer widget
-      <paper-input label="Source"></paper-input>
-      <paper-input label="Target"></paper-input>
-      <paper-input label="CloudFront Distribution"></paper-input>
+      <paper-input label="Source" value="{{component.parameters.source}}"></paper-input>
+      <paper-input label="Target" value="{{component.parameters.target}}"></paper-input>
+      <paper-toggle-button value="">CloudFront Distribution</paper-toggle-button>
+      <paper-toggle-button value="">SSL Certificate</paper-toggle-button>
+      <paper-toggle-button value="">Route 53</paper-toggle-button>
+      <configuration-panel component="{{component}}"></configuration-panel>
     </div>
   </template>
 
@@ -36,12 +37,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       Polymer({
         is: 'webda-s3-deployer',
         properties: {
-          configuration: {
-            type: Object
+          component: {
+            type: Object,
+            value: {
+              parameters: {}
+            },
+            notify: true
           }
         },
+        getConfiguration: function() {
+          return this.component.parameters;
+        },
+        setConfiguration: function(config) {
+          this.component.parameters = config;
+        },
+        validate: function() {
+          return this.component.parameters.source && this.component.parameters.target;
+        },
         ready: function() {
-          console.log('webda-s3-deployer is ready !');
         }
       });
     })();

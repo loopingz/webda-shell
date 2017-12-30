@@ -124,7 +124,7 @@ RUN cd /server && rm -rf node_modules && npm install
       "label": "Docker",
       "description": "Create a Docker image and push it",
       "webcomponents": [],
-      "logo": "images/placeholders/docker.png",
+      "logo": "images/icons/docker.png",
       "configuration": {
         "default": {
           "params": {},

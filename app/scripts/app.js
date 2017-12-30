@@ -36,20 +36,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   app.saveCurrentComponent = function () {
     if (app.currentComponent === undefined || app.currentComponent._type === undefined) return;
-    this.$.ajax.method = 'PUT';
-    this.$.ajax.contentType = 'application/json';
+    app.$.ajax.method = 'PUT';
+    app.$.ajax.contentType = 'application/json';
     if (app.currentComponent._type === "Route") {
-      this.$.ajax.body = app.currentComponent;
-      this.$.ajax.url = app.getUrl('/routes');  
+      app.$.ajax.body = app.currentComponent;
+      app.$.ajax.url = app.getUrl('/routes');
     } else {
-      this.$.ajax.url = app.getUrl('/' + app.currentComponent._type.toLowerCase() + 's/' + app.currentComponent._name);
-      this.$.ajax.body = app.currentComponent;
+      app.$.ajax.url = app.getUrl('/' + app.currentComponent._type.toLowerCase() + 's/' + app.currentComponent._name);
+      app.$.ajax.body = app.currentComponent;
     }
-    this.$.ajax.generateRequest().completes.then( () => {
+    app.$.ajax.generateRequest().completes.then( () => {
       // Refresh for now but should be changed
       app.$.toast.text = 'Updated';
       app.$.toast.show();
-      this.refresh();
+      app.refresh();
     }, () => {
       app.$.toast.text = 'An error occurs';
       app.$.toast.show();
@@ -74,7 +74,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   window.addEventListener('iron-select', (evt) => {
     if (evt.detail &&
-        evt.detail.item && 
+        evt.detail.item &&
         evt.detail.item.parentElement &&
         evt.detail.item.parentElement.classList &&
         evt.detail.item.parentElement.classList.contains('serviceSelector') &&
@@ -89,7 +89,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       console.log(app.resolvedComponent);
     }
     if (evt.detail &&
-        evt.detail.item && 
+        evt.detail.item &&
         evt.detail.item.parentElement &&
         evt.detail.item.parentElement.classList &&
         evt.detail.item.parentElement.classList.contains('deploymentSelector') &&
@@ -301,7 +301,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         console.log('Error loading modda', app.moddas[i].uuid,app.moddas[i].configuration.schema, ex);
       }
     }
-    
+
   }
 
   /**** Configuration mapper   ****/
@@ -325,7 +325,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
     // Then take the local one
     app._extend(res, params);
-    if (params._type === "Service" && app.currentDeployment && 
+    if (params._type === "Service" && app.currentDeployment &&
                   app.currentDeployment.services && app.currentDeployment.services[params._name]) {
       res = merge.recursive(true, res, app.currentDeployment.services[params._name]);
     }
@@ -368,7 +368,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       app.deployButton = app.route === 'deployments';
       app.canDeploy = false;
     });
-    
+
     app.connect();
 
     app.addEventListener('deploy', function (evt) {
@@ -391,11 +391,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       app.$.deploymentProgress.open();
 
-      
+
       //Use for debug purpose
       //app.i = 0;
       //setTimeout(app.fakeOutput, 1000);
-      
+
     });
 
     var fake = ["[1/4] Start to deploy","[2/4] Lambda","[3/4] Gateway","[4/4] Permission", "DONE"]
@@ -407,13 +407,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     }
 
+    window.addEventListener('webda-save-current-component', app.saveCurrentComponent);
+
     // imports are loaded and elements have been registered
-    app.$.newDeploymentDialog.addEventListener('iron-overlay-closed', function (evt) {
-      if (!evt.detail.confirmed) return;
-      app.refresh();
-      app.$.toast.text = 'Deployment created';
-      app.$.toast.show();
-    });
     app.$.newModelDialog.addEventListener('iron-overlay-closed', function (evt) {
       if (!evt.detail.confirmed) return;
       app.refresh();
@@ -459,6 +455,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       app.deployAction = "Deployment Finished";
       app.deployStepper.finished = true;
     }
+  }
+
+  app.createDeploymentGroup = function () {
+    app.$.ajax.method = 'POST';
+    // Clone default config
+    app.$.ajax.body = {type: 'deployment', uuid: app.newDeploymentGroupName};
+    app.$.ajax.url = app.getUrl('/deployments');
+    app.$.ajax.contentType = 'application/json';
+    app.$.ajax.generateRequest().completes.then( () => {
+      app.refresh();
+      app.$.toast.text = 'Deployment group created';
+      app.$.toast.show();
+      app.$.newDeploymentGroupDialog.close();
+      app.newDeploymentGroupName = '';
+    }, (err) => {
+      if (err.message.endsWith("409")) {
+        app.$.toast.text = 'This name is already used';
+        app.$.toast.show();
+      } else {
+        app.$.toast.text = err.message;
+        app.$.toast.show();
+      }
+    });
   }
 
   app._noBuiltin = function(item) {

@@ -63,7 +63,7 @@ class WeDeployDeployer extends DockerDeployer {
       "label": "WeDeploy",
       "description": "Create a Wedeploy service and update it",
       "webcomponents": [],
-      "logo": "images/placeholders/wedeploy.png",
+      "logo": "images/icons/wedeploy.png",
       "configuration": {
         "default": {
           "params": {},

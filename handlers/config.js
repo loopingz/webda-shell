@@ -365,15 +365,6 @@ class ` + className + ` extends ` + extendName + ` {
         deployments.sort(function (a, b) {
           return a._name.localeCompare(b._name);
         });
-        /*
-        deployments.splice(0, 0, {
-          "uuid": "Global",
-          "_type": "Configuration",
-          "_name": "Global",
-          "params": this._config.global.params
-        });
-        this._depoyments["Global"] = true;
-        */
         ctx.write(deployments);
       });
     } else if (ctx._route._http.method == "POST") {

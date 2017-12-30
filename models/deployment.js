@@ -7,6 +7,8 @@ class Deployment extends CoreModel {
       this.parameters = this.params;
       delete this.parameters;
     }
+    this.parameters = this.parameters || {};
+    this.resources = this.resources || {};
     this.services = this.services || {};
     this.units = this.units || [];
     this._type = 'deployment';

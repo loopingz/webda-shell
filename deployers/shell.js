@@ -67,7 +67,7 @@ class ShellDeployer extends Deployer {
       "label": "Shell scripts",
       "description": "Execute a list of scripts",
       "webcomponents": [],
-      "logo": "images/placeholders/bash.png",
+      "logo": "images/icons/shell.png",
       "configuration": {
         "default": {
           "params": {},

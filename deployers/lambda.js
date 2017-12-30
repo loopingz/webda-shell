@@ -84,7 +84,7 @@ class AWSDeployer extends Deployer {
           })
         }
       }).then( () => {
-        // 
+        //
         return iam.listRoles({PathPrefix: '/webda/'}).promise().then( (data) => {
           let role;
           for (let i in data.Roles) {
@@ -193,7 +193,7 @@ class AWSDeployer extends Deployer {
       }
     }
     console.log("Deploying to " + "AWS".yellow);
-    
+
     if (args[0] !== "aws-only") {
       promise = promise.then(() => {
         return this.generatePackage(zipPath);
@@ -560,7 +560,7 @@ class AWSDeployer extends Deployer {
       if (this._addOPTIONS) {
         if (typeof(local.method) == "string") {
           local.method = [local.method];
-        } 
+        }
         local.method.push('OPTIONS');
       }
       if (typeof(local.method) == "string") {
@@ -572,7 +572,7 @@ class AWSDeployer extends Deployer {
       }
     }).then(() => {
       if (this._addMockCORS) {
-        return this.createCORSMethod(resource, allowedMethods);  
+        return this.createCORSMethod(resource, allowedMethods);
       }
       return Promise.resolve();
     });
@@ -710,7 +710,7 @@ class AWSDeployer extends Deployer {
       if (this._addOPTIONS) {
         if (typeof(local.method) == "string") {
           local.method = [local.method];
-        } 
+        }
         local.method.push('OPTIONS');
       }
       if (typeof(local.method) == "string") {
@@ -722,7 +722,7 @@ class AWSDeployer extends Deployer {
       }
     }).then(() => {
       if (this._addMockCORS) {
-        return this.createCORSMethod(resource, allowedMethods);  
+        return this.createCORSMethod(resource, allowedMethods);
       }
       return Promise.resolve();
     });
@@ -734,7 +734,7 @@ class AWSDeployer extends Deployer {
       "label": "Lambda",
       "description": "Deploy on Lambda, map it with API Gateway",
       "webcomponents": [],
-      "logo": "images/placeholders/aws.png",
+      "logo": "images/icons/lambda.png",
       "configuration": {
         "default": {
           "params": {},

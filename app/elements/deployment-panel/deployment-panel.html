@@ -48,10 +48,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       margin-right: 0px;
     }
     #unitConfiguration {
-      border-left: 1px solid #ccc;
-      border-right: 1px solid #ccc;
-      border-bottom: 1px solid #ccc;
-      padding: 10px;
+      padding: 20px;
       margin-bottom: 20px;
     }
     div[subroute='units'] > div {
@@ -96,13 +93,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div subroute='units'>
         <div>
           <div style="width: 66%">
-          <template is="dom-if" if="[[activeUnit]]">
+          <template is="dom-if" if="[[hasActiveUnit]]">
             <div id="unitConfiguration">
               <label>Unit resources</label>
               <juicy-jsoneditor mode="{{juicyMode}}" modes=["view","tree","text","form"] json="{{activeUnit}}"></juicy-jsoneditor>
             </div>
           </template>
-          <template is="dom-if" if="![[activeUnit]]">
+          <template is="dom-if" if="[[!hasActiveUnit]]">
             <div style="padding: 20px;">
               <p>Deployment unit let you deploy into several environment parts of the application</p>
               <p>Click on the <iron-icon icon="add"></iron-icon> to add a new unit or on an existing one to configure it</p>
@@ -138,11 +135,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.$.newDeploymentDialog.addEventListener('add-deployment-unit', (evt) => {
             this.push('component.units', evt.detail);
             this.dispatchEvent(new CustomEvent('webda-save-current-component', {bubbles: true, composed: true }));
-            console.log('pushed', evt.detail);
+            this.activeUnit = evt.detail;
           });
         },
-        _selectUnit: function() {
-
+        _selectUnit: function(evt) {
+          this.activeUnit = evt.target.unit;
+          this.hasActiveUnit = this.activeUnit !== undefined;
+          console.log(this.activeUnit);
         },
         _addUnit: function() {
           this.$.newDeploymentDialog.open();
@@ -154,7 +153,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             app.currentDeployment = undefined;
           }
         },
-        updateActive: function() {
+        _updateActive: function() {
           this.active = (app.currentDeployment && this.component && app.currentDeployment._name == this.component._name);
           if (!this.component) return;
           if (this.component._type !== 'deployment') return;
@@ -162,6 +161,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.services.forEach( (service) => {
             this.component.services[service._name] = this.component.services[service._name] || {};
           });
+          this.activeUnit = undefined;
+          this.hasActiveUnit = false;
+        },
+        _updateUnit: function() {
+          console.log(this.activeUnit);
         },
         properties: {
           subroute: {
@@ -180,13 +184,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value: false,
             readonly: true
           },
+          hasActiveUnit: {
+            type: Boolean,
+            value: false
+          },
           deployers: {
             type: Object
+          },
+          activeUnit: {
+            type: Object,
+            observer: '_updateUnit'
           },
           component: {
             type: Object,
             notify: true,
-            observer: 'updateActive'
+            observer: '_updateActive'
           }
         }
       });

@@ -120,7 +120,7 @@ RUN cd /server && rm -rf node_modules && npm install
 
   static getModda() {
     return {
-      "uuid": "docker",
+      "uuid": "WebdaDeployer/Docker",
       "label": "Docker",
       "description": "Create a Docker image and push it",
       "webcomponents": [],

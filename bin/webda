@@ -283,7 +283,6 @@ function handleCommand(cmd) {
       return webda.serve(18181, argv.open);
     case 'deploy':
       webda = new config();
-      console.log('Deploying', argv.deployment);
       return webda.deploy(argv.deployment, argv._.slice(1)).catch((err) => {
         console.trace(err);
       });

@@ -219,6 +219,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     app.dirty = true;
   }
 
+  app.deploy = function() {
+    app.fire('deploy', app.currentComponent.uuid);
+  }
+
   app.onSelectDeployment = function(evt) {
     var index = app.getAttribute('dataIndex', evt.target);
     if (index !== undefined) {

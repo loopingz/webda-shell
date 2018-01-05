@@ -418,11 +418,11 @@ class WebdaConfigurationServer extends WebdaServer {
   constructor(config) {
     super(config);
     this._deployers = {};
-    this._deployers["lambda"] = require("../deployers/lambda");
-    this._deployers["s3"] = require("../deployers/s3");
-    this._deployers["docker"] = require("../deployers/docker");
-    this._deployers["shell"] = require("../deployers/shell");
-    this._deployers["wedeploy"] = require("../deployers/wedeploy");
+    this._deployers["WebdaDeployer/Lambda"] = require("../deployers/lambda");
+    this._deployers["WebdaDeployer/S3"] = require("../deployers/s3");
+    this._deployers["WebdaDeployer/Docker"] = require("../deployers/docker");
+    this._deployers["WebdaDeployer/Shell"] = require("../deployers/shell");
+    this._deployers["WebdaDeployer/WeDeploy"] = require("../deployers/wedeploy");
     var files = Finder.from('./node_modules').findFiles('webda.modda.json');
     console.log('found moddas', JSON.stringify(files));
   }
@@ -561,7 +561,7 @@ class WebdaConfigurationServer extends WebdaServer {
         return Promise.resolve();
       }
       // Reload with the resolved configuration
-      this.resolveConfiguration(this.config[this.getHost()], deployment);
+      this.resolveConfiguration(this.config, deployment);
       let srcConfig = this.exportJson(this.config);
       this.loadMock(this.config);
 
@@ -576,8 +576,21 @@ class WebdaConfigurationServer extends WebdaServer {
       }
 
       // Normal launch from the console or forked process
-      let host = this.getHost();
-      return new this._deployers[deployment.type](this.computeConfig, srcConfig, deployment).deploy(args);
+      let promise = Promise.resolve();
+      console.log('Deploying', deployment.uuid, 'with', deployment.units.length, 'units');
+      for (let i in deployment.units) {
+        // Deploy each unit
+        promise.then( () => {
+          // Filter by unit name if args
+          if (!this._deployers[deployment.units[i].type]) {
+            console.log('Cannot deploy unit', deployment.units[i].name, '(', deployment.units[i].type, '): type not found');
+            return Promise.resolve();
+          }
+          console.log('Deploy unit', deployment.units[i].name, '(', deployment.units[i].type, ')');
+          return new this._deployers[deployment.units[i].type](this.computeConfig, srcConfig, deployment).deploy(args);
+        });
+      }
+      return promise;
     });
   }
 
@@ -631,7 +644,7 @@ class WebdaConfigurationServer extends WebdaServer {
 
   deployFork(env) {
     var args = [];
-    args.push('/usr/local/lib/node_modules/webda-shell/bin/webda');
+    args.push('webda');
     args.push('-d ' + env);
     args.push("deploy");
 

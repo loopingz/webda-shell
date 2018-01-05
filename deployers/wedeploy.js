@@ -59,7 +59,7 @@ class WeDeployDeployer extends DockerDeployer {
 
   static getModda() {
     return {
-      "uuid": "wedeploy",
+      "uuid": "WebdaDeployer/WeDeploy",
       "label": "WeDeploy",
       "description": "Create a Wedeploy service and update it",
       "webcomponents": [],

@@ -75,10 +75,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style include="paper-dialog-shared-styles"></style>
       <h2>New Deployment</h2>
       <paper-dialog-scrollable>
-        <paper-input label="Name" value="{{name}}" placeholder="Enter deployment name"></paper-input>
+        <paper-input label="Name" value="{{configuration.name}}" placeholder="Enter deployment name"></paper-input>
         <webda-moddas-selector moddas="[[deployers]]" selected="{{deployer}}"></webda-moddas-selector>
         <div>[[selected.description]]</div>
-        <div id="configurationWidget"></div>
+        <webda-modda-configurator modda="[[deployer]]" configuration="{{configuration}}"></webda-modda-configurator>
       </paper-dialog-scrollable>
       <div class="buttons">
         <span id="error">[[error]]</span>
@@ -105,39 +105,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.invalidForm = true;
           }
         },
-        create: function () {
-          if (this.deployerConfigurator) {
-            this.configuration = this.deployerConfigurator.getConfiguration();
-          } else {
-            this.configuration.name = this.name;
-            this.configuration.type = this.deployer.uuid;
-          }
+        _updateDeployer() {
+          this.configuration = this.deployer.configuration.default || {};
           this.configuration.name = this.name;
+          this.configuration.type = this.deployer.uuid;
+        },
+        create: function () {
+          this.configuration.name = this.name;
+          this.configuration.type = this.deployer.uuid;
           this.dispatchEvent(new CustomEvent('add-deployment-unit', { detail: this.configuration, bubbles: true, composed: true }));
           this.close();
-        },
-        _updateDeployer: function () {
-          // Remove configuration panel
-          while (this.$.configurationWidget.firstChild) {
-            this.$.configurationWidget.removeChild(this.$.configurationWidget.firstChild);
-          }
-          // Add deployer
-          if (this.deployer) {
-            this.configuration = JSON.parse(JSON.stringify(this.deployer.configuration.default));
-            // Add configuration widget if exists
-            this.deployerConfigurator = undefined;
-            if (this.deployer.configurationWidget && this.deployer.configurationWidget.url) {
-              Polymer.Base.importHref(this.deployer.configurationWidget.url, (evt) => {
-                this.deployerConfigurator = window.document.createElement(this.deployer.configurationWidget.tag, {configuration: {source: 'test'}});
-                if (this.deployerConfigurator) {
-                  if (this.deployerConfigurator.setConfiguration) {
-                    this.deployerConfigurator.setConfiguration({source: 'test'});
-                  }
-                  Polymer.dom(this.$.configurationWidget).appendChild(this.deployerConfigurator);
-                }
-              });
-            }
-          }
         },
         properties: {
           editMode: {

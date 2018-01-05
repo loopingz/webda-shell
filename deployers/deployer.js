@@ -4,7 +4,7 @@ const _extend = require("util")._extend;
 class Deployer {
   constructor(config, srcConfig, deployment) {
     this._step = 1;
-    this.params = {};
+    this.parameters = {};
     this.resources = {};
     this.deployment = deployment;
     this.config = config;
@@ -16,9 +16,10 @@ class Deployer {
     if (deployment === undefined) {
       throw Error("Unknown deployment");
     }
-    _extend(this.params, config.global.params);
-    _extend(this.params, deployment.params);
-    _extend(this.resources, this.params);
+
+    _extend(this.parameters, config.parameters);
+    _extend(this.parameters, deployment.parameters);
+    _extend(this.resources, this.parameters);
     _extend(this.resources, deployment.resources);
   }
 

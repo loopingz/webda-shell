@@ -95,8 +95,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <div style="width: 66%">
           <template is="dom-if" if="[[hasActiveUnit]]">
             <div id="unitConfiguration">
-              <label>Unit resources</label>
-              <juicy-jsoneditor mode="{{juicyMode}}" modes=["view","tree","text","form"] json="{{activeUnit}}"></juicy-jsoneditor>
+              <webda-modda-configurator modda="[[activeUnitDeployer]]" configuration="{{activeUnit}}"></webda-modda-configurator>
             </div>
           </template>
           <template is="dom-if" if="[[!hasActiveUnit]]">
@@ -128,9 +127,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       Polymer({
         is: 'deployment-panel',
-        deploy: function () {
-          app.fire('deploy', this.component.uuid);
-        },
         ready: function() {
           this.$.newDeploymentDialog.addEventListener('add-deployment-unit', (evt) => {
             this.push('component.units', evt.detail);
@@ -141,7 +137,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         _selectUnit: function(evt) {
           this.activeUnit = evt.target.unit;
           this.hasActiveUnit = this.activeUnit !== undefined;
-          console.log(this.activeUnit);
+          this.activeUnitDeployer = undefined;
+          if (!this.hasActiveUnit) {
+            return;
+          }
+          // Search for the deployers
+          this.deployers.forEach( (deployer) => {
+            console.log(this.activeUnit.type, deployer.uuid, this.activeUnit.type !== deployer.uuid)
+            if (this.activeUnit.type !== deployer.uuid) return;
+            this.activeUnitDeployer = deployer;
+          });
+          console.log(this.activeUnit, this.activeUnitDeployer);
         },
         _addUnit: function() {
           this.$.newDeploymentDialog.open();

@@ -21,12 +21,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
     <div>
-      <paper-input label="Source" value="{{component.parameters.source}}"></paper-input>
-      <paper-input label="Target" value="{{component.parameters.target}}"></paper-input>
+      <paper-input label="Source" value="{{configuration.source}}"></paper-input>
+      <paper-input label="Target" value="{{configuration.target}}"></paper-input>
       <paper-toggle-button value="">CloudFront Distribution</paper-toggle-button>
       <paper-toggle-button value="">SSL Certificate</paper-toggle-button>
       <paper-toggle-button value="">Route 53</paper-toggle-button>
-      <configuration-panel component="{{component}}"></configuration-panel>
     </div>
   </template>
 
@@ -37,22 +36,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       Polymer({
         is: 'webda-s3-deployer',
         properties: {
-          component: {
+          configuration: {
             type: Object,
-            value: {
-              parameters: {}
-            },
+            value: {},
             notify: true
           }
         },
         getConfiguration: function() {
-          return this.component.parameters;
+          return this.configuration;
         },
         setConfiguration: function(config) {
-          this.component.parameters = config;
+          this.configuration = config;
         },
         validate: function() {
-          return this.component.parameters.source && this.component.parameters.target;
+          return this.configuration.source && this.configuration.target;
         },
         ready: function() {
         }

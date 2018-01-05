@@ -63,7 +63,7 @@ class ShellDeployer extends Deployer {
 
   static getModda() {
     return {
-      "uuid": "shell",
+      "uuid": "WebdaDeployer/Shell",
       "label": "Shell scripts",
       "description": "Execute a list of scripts",
       "webcomponents": [],

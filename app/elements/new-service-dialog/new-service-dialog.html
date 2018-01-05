@@ -86,7 +86,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <iron-pages attr-for-selected="data-repo" selected="{{section}}">
           <section data-repo="Custom">
-            <require-panel file="{{service.require}}" add-js placeholder="./services/myservice"></require-panel>
+            <require-panel file="{{require}}" add-js placeholder="./services/myservice"></require-panel>
           </section>
           <section data-repo="Webda">
           <paper-dialog-scrollable dialog-element="[[node]]">
@@ -163,11 +163,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
         create: function () {
           this.$.ajax.method = 'POST';
-          if (this.selected && this.selected.configuration.default) {
+          this.service = {};
+          if (this.section === 'Webda' && this.selected && this.selected.configuration.default) {
             var defConf = this.selected.configuration.default;
             for (var i in defConf) {
               this.service[i]=defConf[i];
             }
+            this.service.type = this.selected.uuid;
+          }
+          if (this.section === 'Custom') {
+            this.service.type = 'Custom';
+            this.service.require = this.require;
           }
           this.$.ajax.body = this.service;
           this.$.ajax.url = app.getUrl('/services/' + this.name);

@@ -61,13 +61,12 @@ class S3Deployer extends Deployer {
       "uuid": "s3",
       "label": "S3",
       "description": "Deploy a S3 public website",
-      "webcomponents": [],
       "logo": "images/icons/s3.png",
-      "configurationWidget": {
-        "tag": "webda-s3-deployer",
-        "url": "elements/deployers/webda-s3-deployer.html"
-      },
       "configuration": {
+        "widget": {
+          "tag": "webda-s3-deployer",
+          "url": "elements/deployers/webda-s3-deployer.html"
+        },
         "default": {
           "params": {},
           "resources": {

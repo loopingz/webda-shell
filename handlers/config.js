@@ -324,17 +324,17 @@ class ` + className + ` extends ` + extendName + ` {
       if (!ctx.body.url) {
         throw 400;
       }
-      delete this._config[ctx.body.url];
+      delete this._config.routes[ctx.body.url];
       this.save();
       return;
     }
     var url = ctx.body._name;
     delete ctx.body.url;
     this.cleanBody(ctx);
-    if (ctx._route._http.method === "POST" && this._config[url] != null) {
+    if (ctx._route._http.method === "POST" && this._config.routes[url] != null) {
       throw 409;
     }
-    this._config[url] = ctx.body;
+    this._config.routes[url] = ctx.body;
     this.save();
   }
 

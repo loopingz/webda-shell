@@ -419,9 +419,9 @@ class WebdaConfigurationServer extends WebdaServer {
     super(config);
     this._deployers = {};
     this._deployers["WebdaDeployer/Lambda"] = require("../deployers/lambda");
+    this._deployers["WebdaDeployer/Fargate"] = require("../deployers/fargate");
     this._deployers["WebdaDeployer/S3"] = require("../deployers/s3");
     this._deployers["WebdaDeployer/Docker"] = require("../deployers/docker");
-    this._deployers["WebdaDeployer/Shell"] = require("../deployers/shell");
     this._deployers["WebdaDeployer/WeDeploy"] = require("../deployers/wedeploy");
     var files = Finder.from('./node_modules').findFiles('webda.modda.json');
     console.log('found moddas', JSON.stringify(files));
@@ -553,6 +553,35 @@ class WebdaConfigurationServer extends WebdaServer {
   logRequest(...args) {
   }
 
+  uninstallServices() {
+    var promise = Promise.resolve();
+    for (let i in this.config.global.services) {
+      let service = this.config.global._services[i.toLowerCase()];
+      if (service === undefined) {
+        continue;
+      }
+      promise = promise.then(() => {
+        console.log('Uninstalling service ' + i);
+        return service.install(this.resources);
+      });
+    }
+    return promise;
+  }
+
+  installServices(resources) {
+    var promise = Promise.resolve();
+    let services = this._mockWedba.getServices();
+    //console.log(this.config);
+    for (let i in services) {
+      let service = services[i];
+      promise = promise.then(() => {
+        console.log('Installing service ', i);
+        return service.install(resources);
+      });
+    }
+    return promise;
+  }
+
   deploy(env, args, fork) {
     return this.getService("deployments").get(env).then((deployment) => {
 
@@ -576,18 +605,22 @@ class WebdaConfigurationServer extends WebdaServer {
       }
 
       // Normal launch from the console or forked process
-      let promise = Promise.resolve();
-      console.log('Deploying', deployment.uuid, 'with', deployment.units.length, 'units');
+      console.log('Installing services');
+      let promise = this.installServices(deployment.resources).then( () => {
+        console.log('Deploying', deployment.uuid, 'with', deployment.units.length, 'units');
+        return Promise.resolve();
+      });
       for (let i in deployment.units) {
         // Deploy each unit
-        promise.then( () => {
+        promise = promise.then( () => {
           // Filter by unit name if args
           if (!this._deployers[deployment.units[i].type]) {
             console.log('Cannot deploy unit', deployment.units[i].name, '(', deployment.units[i].type, '): type not found');
             return Promise.resolve();
           }
           console.log('Deploy unit', deployment.units[i].name, '(', deployment.units[i].type, ')');
-          return new this._deployers[deployment.units[i].type](this.computeConfig, srcConfig, deployment).deploy(args);
+          return (new this._deployers[deployment.units[i].type](
+              this.computeConfig, srcConfig, deployment, deployment.units[i])).deploy(args);
         });
       }
       return promise;

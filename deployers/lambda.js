@@ -1,29 +1,23 @@
 "use strict";
-const Deployer = require("./deployer");
-const AWS = require('aws-sdk');
+const AWSDeployer = require("./aws");
 const fs = require('fs');
 const crypto = require('crypto');
 const colors = require('colors');
 const LAMBDA_ROLE_POLICY = '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"}]}';
 
-class AWSDeployer extends Deployer {
+class LambdaDeployer extends AWSDeployer {
 
   _getObjectTypeName(type) {
     return this._lambdaFunctionName + type;
   }
 
   generateARN(args) {
-    let accessKeyId = this.resources.accessKeyId || process.env.AWS_ACCESS_KEY_ID;
-    let secretAccessKey = this.resources.secretAccessKey || process.env.AWS_SECRET_ACCESS_KEY;
-    let region = this.resources.region || process.env.AWS_DEFAULT_REGION;
-    this._lambdaFunctionName = this.resources.lamdaFunctionName || this.resources.restApi;
     let services = this.getServices();
     let roleName = this._getObjectTypeName('Role');
     let policyName = this._getObjectTypeName('Policy');
-    AWS.config.update({accessKeyId: accessKeyId, secretAccessKey: secretAccessKey, region: region});
-    let sts = new AWS.STS();
-    let iam = new AWS.IAM();
-    this.resources.AWS = AWS;
+    let sts = new (this._AWS).STS();
+    let iam = new (this._AWS).IAM();
+
     return sts.getCallerIdentity().promise().then( (id) => {
       // arn:aws:logs:us-east-1:123456789012:*
       let statements = [];
@@ -36,6 +30,7 @@ class AWSDeployer extends Deployer {
       // Build policy
       for (let i in services) {
         if (services[i].getARNPolicy) {
+          // Update to match recuring policy - might need to split if policy too big
           statements.push(services[i].getARNPolicy(id.Account));
         }
       }
@@ -48,7 +43,7 @@ class AWSDeployer extends Deployer {
               "logs:PutLogEvents"
           ],
           "Resource": [
-              "arn:aws:logs:" + region + ":" + id.Account + ":*"
+              "arn:aws:logs:" + this._AWS.config.region + ":" + id.Account + ":*"
           ]
       });
       let policyDocument = {
@@ -95,7 +90,9 @@ class AWSDeployer extends Deployer {
           }
           if (!role) {
             console.log('Creating AWS Role', roleName);
-            return iam.createRole({Description: 'webda-generated', Path: '/webda/', RoleName: roleName, AssumeRolePolicyDocument: LAMBDA_ROLE_POLICY}).promise();
+            return iam.createRole({Description: 'webda-generated', Path: '/webda/', RoleName: roleName, AssumeRolePolicyDocument: LAMBDA_ROLE_POLICY}).promise().then( (res) => {
+              return Promise.resolve(res.Role);
+            });
           }
           return Promise.resolve(role);
         }).then( (role) => {
@@ -114,13 +111,12 @@ class AWSDeployer extends Deployer {
     });
   }
 
-  installServices(args) {
-    return this.generateARN(args).then( () => {
-      return super.installServices(args);
-    });
+  transformRestApiToFunctionName(name) {
+    return name.replace(/[^a-zA-Z0-9_]/g, '-');
   }
 
   deploy(args) {
+    this._AWS = this._getAWS(this.resources);
     this._maxStep = 4;
     if (args[0] === "package") {
       this._maxStep = 1;
@@ -130,7 +126,7 @@ class AWSDeployer extends Deployer {
       this._maxStep = 3;
     }
     this._restApiName = this.resources.restApi;
-    this._lambdaFunctionName = this.resources.lamdaFunctionName || this.resources.restApi;
+    this._lambdaFunctionName = this.resources.functionName || this.transformRestApiToFunctionName(this.resources.restApi);
     this._lambdaRole = this.resources.lambdaRole;
     this._lambdaHandler = this.resources.lambdaHandler;
     this._lambdaDefaultHandler = this._lambdaHandler === undefined;
@@ -139,7 +135,7 @@ class AWSDeployer extends Deployer {
 
     var promise = Promise.resolve();
     if (args[0] !== "package") {
-      promise = this.installServices().then( () => {
+      promise = this.generateARN().then( () => {
         if (!this._lambdaRole.startsWith("arn:aws")) {
           // Try to get the Role ARN ?
           throw Error("LambdaRole needs to be the ARN of the Role");
@@ -148,32 +144,23 @@ class AWSDeployer extends Deployer {
     }
 
     if (this._lambdaFunctionName === undefined) {
-      throw Error("Need to define LambdaRole and a Rest API Name");
+      throw Error("Need to define a Rest API Name at least", this._lambdaFunctionName);
     }
     if (this._restApiName === undefined) {
       this._maxStep = 2;
     }
 
     if (this.resources.lambdaMemory) {
-      this._lambdaMemorySize = this.resources.lambdaMemory;
+      this._lambdaMemorySize = Number.valueOf(this.resources.lambdaMemory);
     } else {
       // Dont handle less well for now
       this._lambdaMemorySize = 512;
     }
-    this._awsGateway;
-    this._awsLambda;
-    if (this.resources.region !== undefined) {
-      AWS.config.update({region: this.resources.region});
-      console.log('Setting region to: ' + this.resources.region);
-    }
-    this.region = AWS.config.region;
+    this.region = this._AWS.config.region;
     let zipPath = "dist/" + this._lambdaFunctionName + '.zip';
-    let accessKeyId = this.resources.accessKeyId || process.env.AWS_ACCESS_KEY_ID;
-    let secretAccessKey = this.resources.secretAccessKey || process.env.AWS_SECRET_ACCESS_KEY;
-    AWS.config.update({accessKeyId: accessKeyId, secretAccessKey: secretAccessKey});
-    this._awsGateway = new AWS.APIGateway();
-    this._awsLambda = new AWS.Lambda();
-    this._origin = this.params.website;
+    this._awsGateway = new this._AWS.APIGateway();
+    this._awsLambda = new this._AWS.Lambda();
+    this._origin = this.parameters.website;
 
     if (this._origin) {
       if (this._origin === '*' || Array.isArray(this._origin) || this._origin.indexOf(',') >= 0) {
@@ -219,8 +206,6 @@ class AWSDeployer extends Deployer {
     }
     return promise.then(() => {
       return this.generateAPIGateway();
-    }).catch((err) => {
-      console.log(err);
     });
   }
 
@@ -322,7 +307,7 @@ class AWSDeployer extends Deployer {
       Handler: this._lambdaHandler,
       Role: this._lambdaRole,
       Runtime: 'nodejs6.10',
-      Timeout: this._lamdaTimeout,
+      Timeout: this._lambdaTimeout,
       'Description': 'Deployed with Webda for API: ' + this._restApiName,
       Publish: true
     };
@@ -381,7 +366,7 @@ class AWSDeployer extends Deployer {
         Handler: this._lambdaHandler,
         Role: this._lambdaRole,
         Runtime: 'nodejs6.10',
-        Timeout: this._lamdaTimeout,
+        Timeout: this._lambdaTimeout,
         Description: 'Deployed with Webda for API: ' + this._restApiName
       };
       return this._awsLambda.updateFunctionConfiguration(params).promise();
@@ -495,9 +480,9 @@ class AWSDeployer extends Deployer {
       }
       found["/"] = true;
       // Compare with local
-      for (let url in this.config) {
-        if (url[0] !== '/') continue;
-        let current = this.config[url];
+      for (let url in this.config.routes) {
+        let current = this.config.routes[url];
+        current._url = current._url || url;
         // Need to cut the query section
         if (url.indexOf("?") >= 0) {
           current._fullUrl = url;
@@ -526,11 +511,11 @@ class AWSDeployer extends Deployer {
         return a._url.localeCompare(b._url);
       });
 
-      for (let i in toCreate) {
+      toCreate.forEach( (route) => {
         promise = promise.then(() => {
-          return this.createAwsResource(toCreate[i])
+          return this.createAwsResource(route);
         });
-      }
+      });
 
       // Remove old resources
       for (let i in this.tree) {
@@ -736,15 +721,12 @@ class AWSDeployer extends Deployer {
       "webcomponents": [],
       "logo": "images/icons/lambda.png",
       "configuration": {
+        "widget": {
+          "url": "elements/deployers/webda-lambda-deployer.html",
+          "tag": "webda-lambda-deployer"
+        },
         "default": {
-          "params": {},
-          "resources": {
-            "accessKeyId": "YOUR ACCESS KEY",
-            "secretAccessKey": "YOUR SECRET KEY",
-            "restApi": "API NAME",
-            "lambdaRole": "EXECUTION ROLE FOR LAMBDA"
-          },
-          "services": {}
+
         },
         "schema": {
           type: "object"
@@ -754,4 +736,4 @@ class AWSDeployer extends Deployer {
   }
 }
 
-module.exports = AWSDeployer;
+module.exports = LambdaDeployer;

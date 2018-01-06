@@ -1,11 +1,17 @@
 "use strict";
-const Deployer = require("./deployer");
+const AWSDeployer = require("./aws");
 const fs = require('fs');
 
-class S3Deployer extends Deployer {
+class S3Deployer extends AWSDeployer {
 
   deploy(args) {
     console.log('Deploy on S3', args);
+    let s3 = new (this._getAWS(this.resources)).S3();
+    return s3.listBuckets().promise().then( (res) => {
+      console.log('Buckets:' + res);
+    }).catch ( (err) => {
+      console.log(err);
+    });
   }
 
   static getModda() {

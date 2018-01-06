@@ -126,13 +126,13 @@ RUN cd /server && rm -rf node_modules && npm install
       "webcomponents": [],
       "logo": "images/icons/docker.png",
       "configuration": {
+        "widget": {
+          "tag": "webda-docker-deployer",
+          "url": "elements/deployers/webda-docker-deployer.html"
+        },
         "default": {
-          "params": {},
-          "resources": {
-            "tag": "ImageTag",
-            "push": false
-          },
-          "services": {}
+          "tag": "ImageTag",
+          "push": false
         },
         "schema": {
           type: "object"

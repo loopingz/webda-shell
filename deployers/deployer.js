@@ -2,7 +2,8 @@
 const _extend = require("util")._extend;
 
 class Deployer {
-  constructor(config, srcConfig, deployment) {
+
+  constructor(config, srcConfig, deployment, unitParameters) {
     this._step = 1;
     this.parameters = {};
     this.resources = {};
@@ -21,6 +22,7 @@ class Deployer {
     _extend(this.parameters, deployment.parameters);
     _extend(this.resources, this.parameters);
     _extend(this.resources, deployment.resources);
+    _extend(this.resources, unitParameters);
   }
 
   stepper(msg) {
@@ -37,8 +39,8 @@ class Deployer {
 
   getServices() {
     var res = {};
-    for (let i in this.config.global.services) {
-      let service = this.config.global._services[i.toLowerCase()];
+    for (let i in this.config.services) {
+      let service = this.config._services[i.toLowerCase()];
       if (service === undefined) {
         continue;
       }
@@ -47,34 +49,6 @@ class Deployer {
     return res;
   }
 
-  uninstallServices() {
-    var promise = Promise.resolve();
-    for (let i in this.config.global.services) {
-      let service = this.config.global._services[i.toLowerCase()];
-      if (service === undefined) {
-        continue;
-      }
-      promise = promise.then(() => {
-        console.log('Uninstalling service ' + i);
-        return service.install(this.resources);
-      });
-    }
-    return promise;
-  }
-
-  installServices() {
-    var promise = Promise.resolve();
-    let services = this.getServices();
-    //console.log(this.config);
-    for (let i in services) {
-      let service = services[i];
-      promise = promise.then(() => {
-        console.log('Installing service ', i);
-        return service.install(this.resources);
-      });
-    }
-    return promise;
-  }
 }
 
 module.exports = Deployer;

@@ -284,12 +284,12 @@ function handleCommand(cmd) {
     case 'deploy':
       webda = new config();
       return webda.deploy(argv.deployment, argv._.slice(1)).catch((err) => {
-        console.trace(err);
+        console.log('Error', err);
       });
     case 'undeploy':
       webda = new config();
       return webda.undeploy(argv.deployment, argv._.slice(1)).catch((err) => {
-        console.trace(err);
+        console.log(err);
       });
     case 'init':
       {

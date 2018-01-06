@@ -23,9 +23,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div>
       <paper-input label="Source" value="{{configuration.source}}"></paper-input>
       <paper-input label="Target" value="{{configuration.target}}"></paper-input>
-      <paper-toggle-button value="">CloudFront Distribution</paper-toggle-button>
-      <paper-toggle-button value="">SSL Certificate</paper-toggle-button>
-      <paper-toggle-button value="">Route 53</paper-toggle-button>
+      <paper-toggle-button checked="{{configuration.cloudfront}}">CloudFront Distribution</paper-toggle-button>
+      <paper-toggle-button checked="{{configuration.certificate}}">SSL Certificate</paper-toggle-button>
+      <paper-toggle-button checked="{{configuration.route53}}">Route 53</paper-toggle-button>
     </div>
   </template>
 

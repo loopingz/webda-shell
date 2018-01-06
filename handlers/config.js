@@ -604,13 +604,22 @@ class WebdaConfigurationServer extends WebdaServer {
         return Promise.resolve();
       }
 
-      // Normal launch from the console or forked process
-      console.log('Installing services');
-      let promise = this.installServices(deployment.resources).then( () => {
-        console.log('Deploying', deployment.uuid, 'with', deployment.units.length, 'units');
-        return Promise.resolve();
-      });
+      let promise = Promise.resolve();
+      if (!args.length) {
+        // Normal launch from the console or forked process
+        console.log('Installing services');
+        promise = this.installServices(deployment.resources).then(() => {
+          console.log('Deploying', deployment.uuid, 'with', deployment.units.length, 'units');
+          return Promise.resolve();
+        });
+      }
+      let selectedUnit;
+      if (args.length > 0) {
+        selectedUnit = args[0];
+        args = args.slice(1);
+      }
       for (let i in deployment.units) {
+        if (selectedUnit && selectedUnit !== deployment.units[i].name) continue;
         // Deploy each unit
         promise = promise.then( () => {
           // Filter by unit name if args

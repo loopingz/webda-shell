@@ -128,9 +128,7 @@ class LambdaDeployer extends AWSDeployer {
     this._restApiName = this.resources.restApi;
     this._lambdaFunctionName = this.resources.functionName || this.transformRestApiToFunctionName(this.resources.restApi);
     this._lambdaRole = this.resources.lambdaRole;
-    this._lambdaHandler = this.resources.lambdaHandler;
-    this._lambdaDefaultHandler = this._lambdaHandler === undefined;
-    this._lambdaHandler = this._lambdaDefaultHandler ? 'entrypoint.handler' : this._lambdaHandler;
+    this._lambdaHandler = this.resources.lambdaHandler || 'entrypoint.handler';
     this._lambdaTimeout = 3;
 
     var promise = Promise.resolve();
@@ -711,6 +709,12 @@ class LambdaDeployer extends AWSDeployer {
       }
       return Promise.resolve();
     });
+  }
+
+  createCustomDomain() {
+    // Create the Route53
+    // Create the certificate
+    // Create the mapping
   }
 
   static getModda() {

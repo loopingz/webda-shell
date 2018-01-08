@@ -23,9 +23,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div>
       <paper-input label="Source" value="{{configuration.source}}"></paper-input>
       <paper-input label="Target" value="{{configuration.target}}"></paper-input>
-      <paper-toggle-button checked="{{configuration.cloudfront}}">CloudFront Distribution</paper-toggle-button>
-      <paper-toggle-button checked="{{configuration.certificate}}">SSL Certificate</paper-toggle-button>
-      <paper-toggle-button checked="{{configuration.route53}}">Route 53</paper-toggle-button>
+      <paper-toggle-button checked="{{configuration.staticWebsite}}">Static website</paper-toggle-button>
+      <div hidden="{{!configuration.staticWebsite}}">
+        <paper-toggle-button checked="{{configuration.cloudfront}}">CloudFront Distribution</paper-toggle-button>
+        <div hidden="{{!configuration.cloudfront}}">
+          <paper-dropdown-menu label="Price Class" placeholder="US, Canada, Europe">
+            <paper-listbox class="dropdown-content" attr-for-selected="uuid" selected="{{configuration.priceClass}}">
+              <paper-item uuid="PriceClass_100">US, Canada, Europe</paper-item>
+              <paper-item uuid="PriceClass_200">US, Canada, Europe, Asia</paper-item>
+              <paper-item uuid="PriceClass_All">All edge locations</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+          <paper-toggle-button checked="{{configuration.certificate}}">SSL Certificate</paper-toggle-button>
+          <paper-input label="Index" value="{{configuration.indexDocument}}" placeholder="index.html"></paper-input>
+          <paper-input label="Index" value="{{configuration.errorDocument}}" placeholder="error.html"></paper-input>
+        </div>
+        <paper-toggle-button checked="{{configuration.route53}}">Route 53</paper-toggle-button>
+      </div>
     </div>
   </template>
 

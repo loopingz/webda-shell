@@ -7,10 +7,12 @@ class AWSDeployer extends AWSServiceMixin(Deployer) {
     return super._getAWS(params || this.resources)
   }
 
-  _createCertificate(domain) {
+  _createCertificate(domain, forceRegion) {
     let config = JSON.parse(JSON.stringify(this.resources));
     // CloudFront only use certificate in us-east-1 region...
-    config.region = 'us-east-1';
+    if (forceRegion) {
+      config.region = forceRegion;
+    }
     this._acm = new (this._getAWS(config)).ACM();
 
     return this._acm.listCertificates({}).promise().then( (res) => {
@@ -35,10 +37,15 @@ class AWSDeployer extends AWSServiceMixin(Deployer) {
         };
         return this._acm.requestCertificate(params).promise().then( (res) => {
           this._certifcate = res;
-          return new Promise( (resolve) => {
-            // Wait 5s for challenge to be generated
-            setTimeout(resolve.bind(this, res), 5000);
-          });
+          return this._waitFor('Waiting for certificate challenge', (resolve, reject) => {
+            return this._acm.describeCertificate({CertificateArn: this._certifcate.CertificateArn}).promise().then( (res) => {
+              if (res.Certificate.DomainValidationOptions[0].ResourceRecord) {
+                resolve(res.Certificate)
+                return Promise.resolve(true);
+              }
+              return Promise.resolve(false);
+            });
+          }, 10000, 5);
         });
       }
       return Promise.reject();
@@ -169,7 +176,8 @@ class AWSDeployer extends AWSServiceMixin(Deployer) {
   }
 
   tagResource(resource, tags) {
-
+    // Should add tags to every resource when possible
+    // this.resources.AWSTags;
   }
 }
 

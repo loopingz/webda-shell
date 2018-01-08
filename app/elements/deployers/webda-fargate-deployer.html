@@ -21,16 +21,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
     <div>
-      <paper-input label="Docker tag" value="{{configuration.tag}}"></paper-input>
-      <paper-toggle-button value="{{configuration.push}}">Push tag</paper-toggle-button>
-      <paper-dropdown-menu label="Mode" vertical-align="bottom">
-        <paper-listbox class="dropdown-content deploymentSelector" attr-for-selected="uuid" selected="{{activeDeployment}}">
-          <paper-item uuid="">API</paper-item>
-          <template is="dom-repeat" items="{{workers}}">
-            <paper-item uuid="[[item.uuid]]">Worker [[item.uuid]]</paper-item>
-          </template>
-        </paper-listbox>
-      </paper-dropdown-menu>
+      <paper-input label="Cluster name" value="{{configuration.clusterName}}" placeholder="webda-cluster"></paper-input>
+      <paper-input label="VPC" value="{{configuration.vpcId}}" placeholder=""></paper-input>
+      <div>
+        <label>Tasks</label>
+        <paper-dropdown-menu label="Mode" vertical-align="bottom">
+          <paper-listbox class="dropdown-content deploymentSelector" attr-for-selected="uuid" selected="{{activeDeployment}}">
+            <paper-item uuid="">API</paper-item>
+            <template is="dom-repeat" items="{{workers}}">
+              <paper-item uuid="[[item.uuid]]">Worker [[item.uuid]]</paper-item>
+            </template>
+          </paper-listbox>
+        </paper-dropdown-menu>
+        <paper-button>Add</paper-button>
+      </div>
+      <paper-input label="Task Role" value="{{configuration.taskRole}}" placeholder="{{configuration.clusterName}}Role"></paper-input>
     </div>
   </template>
 

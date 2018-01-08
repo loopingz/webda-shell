@@ -429,9 +429,63 @@ class LambdaDeployer extends AWSDeployer {
       return this.generateAPIGatewayStage();
     }).then((deployment) => {
       return this.addLambdaPermission();
-    }).then(() => {
+    }).then( () => {
       console.log("You can now access to your API to : https://" + this.restApiId + ".execute-api." + this.region + ".amazonaws.com/" + this.deployment.uuid);
+      if (this.resources.customDomain && this.resources.customCertificate) {
+        return this.generateAPIGatewayCustomDomain();
+      }
       return Promise.resolve();
+    });
+  }
+
+  generateAPIGatewayCustomDomain() {
+    let domain = this.resources.customDomainName || this.resources.restApi;
+    let cert;
+    // Check custom certificate
+    if (!this.resources.customCertificate) {
+      return Promise.resolve();
+    }
+    let endpoint = this.resources.customDomainEndpoint || 'EDGE';
+    let region;
+    if (endpoint === 'EDGE') {
+      // Enforce region to us-east-1 for certificate
+      region = 'us-east-1';
+    }
+    // For EDGE need to be in us-east-1 -> might want to upgrade to both EDGE and REGIONAL
+    return this._createCertificate(domain, region).then( (res) => {
+      cert = res;
+      return this._awsGateway.getDomainNames().promise();
+    }).then( (res) => {
+      let custom;
+      // Search for the custom domain
+      for (let i in res.items) {
+        if (res.items[i].domainName === domain) {
+          custom = res.items[i];
+        }
+      }
+      if (!custom) {
+        let params = {
+          domainName: domain,
+          endpointConfiguration: { types: [endpoint] }
+        };
+        if (endpoint === 'EDGE') {
+          params.certificateArn = cert.CertificateArn;
+        } else {
+          params.regionalCertificateArn = cert.CertificateArn;
+        }
+        // Create one
+        console.log('Create API Gateway custom domain', domain);
+        return this._awsGateway.createDomainName(params).promise().then( (res) => {
+          custom = res;
+          return this._awsGateway.createBasePathMapping({domainName: domain, restApiId: this.restApiId, basePath: '', stage: this.deployment.uuid}).promise();
+        }).then( () => {
+          return Promise.resolve(custom);
+        });
+      }
+      // Might want to update from the current one if customDomainEndpoint has changed
+      return Promise.resolve(custom);
+    }).then( (distrib) => {
+      return this._createDNSEntry(domain, 'CNAME', distrib.distributionDomainName);
     });
   }
 
@@ -711,11 +765,6 @@ class LambdaDeployer extends AWSDeployer {
     });
   }
 
-  createCustomDomain() {
-    // Create the Route53
-    // Create the certificate
-    // Create the mapping
-  }
 
   static getModda() {
     return {

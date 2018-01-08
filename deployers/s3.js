@@ -141,7 +141,8 @@ class S3Deployer extends AWSDeployer {
       return this._createCloudFront();
     }).then( () => {
       if (!this.resources.cloudfront) {
-        //this._createDNSEntry(this.bucket, 'CNAME', )
+        // Generate a basic CNAME to s3.
+        return this._createDNSEntry(this.bucket, 'CNAME', this.bucket + '.s3-website-' + this._s3.config.region + '.amazonaws.com');
       }
       return Promise.resolve();
     });
@@ -367,8 +368,6 @@ class S3Deployer extends AWSDeployer {
           "url": "elements/deployers/webda-s3-deployer.html"
         },
         "default": {
-          "source": "./folder",
-          "target": "s3://mybucket"
         },
         "schema": {
           type: "object"

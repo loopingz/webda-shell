@@ -21,8 +21,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
     <div>
-      <paper-input label="Source" value="{{configuration.source}}"></paper-input>
-      <paper-input label="Target" value="{{configuration.target}}"></paper-input>
+      <paper-input label="Source" value="{{configuration.source}}" placeholder="Local folder"></paper-input>
+      <paper-input label="Target" value="{{configuration.target}}" placeholder="Bucket name (website domain)"></paper-input>
       <paper-toggle-button checked="{{configuration.staticWebsite}}">Static website</paper-toggle-button>
       <div hidden="{{!configuration.staticWebsite}}">
         <paper-toggle-button checked="{{configuration.cloudfront}}">CloudFront Distribution</paper-toggle-button>

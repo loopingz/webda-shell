@@ -279,11 +279,11 @@ class LambdaDeployer extends AWSDeployer {
         }
       }
       if (this._lambdaDefaultHandler) {
-        var entrypoint = require.resolve(global.__webda_shell + "/deployers/aws_entrypoint.js");
+        var entrypoint = require.resolve(global.__webda_shell + "/deployers/aws-entrypoint.js");
         if (fs.existsSync(entrypoint)) {
           archive.file(entrypoint, {name: "entrypoint.js"});
-        } else if (fs.existsSync("deployers/aws_entrypoint.js")) {
-          archive.file("deployers/aws_entrypoint.js", {name: "entrypoint.js"})
+        } else if (fs.existsSync("deployers/aws-entrypoint.js")) {
+          archive.file("deployers/aws-entrypoint.js", {name: "entrypoint.js"})
         } else {
           throw Error("Cannot find the entrypoint for Lambda");
         }

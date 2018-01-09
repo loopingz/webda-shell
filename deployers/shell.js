@@ -32,34 +32,6 @@ class ShellDeployer extends Deployer {
     console.log(data.toString());
   }
 
-  execute(script, args, onout, onerr) {
-    if (args === undefined) {
-      args = [];
-    }
-    return new Promise((resolve, reject) => {
-      var ls = spawn(script, args);
-
-      ls.stdout.on('data', (data) => {
-        if (onout) {
-          onout(data);
-        }
-      });
-
-      ls.stderr.on('data', (data) => {
-        if (onerr) {
-          onerr(data);
-        }
-      });
-
-      ls.on('close', (code) => {
-        if (code == 0) {
-          resolve(code);
-        } else {
-          reject(code);
-        }
-      });
-    });
-  }
 
   static getModda() {
     return {

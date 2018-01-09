@@ -1,5 +1,5 @@
 const Deployer = require('./deployer');
-const AWSServiceMixin = require('webda/services/aws');
+const AWSServiceMixin = require('webda/services/aws-mixin');
 
 class AWSDeployer extends AWSServiceMixin(Deployer) {
 

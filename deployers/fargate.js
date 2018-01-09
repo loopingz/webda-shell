@@ -1,84 +1,70 @@
 "use strict";
 const AWSDeployer = require("./aws");
+const DockerMixIn = require("./docker-mixin");
 const fs = require('fs');
 
-class FargateDeployer extends AWSDeployer {
+class FargateDeployer extends DockerMixIn(AWSDeployer) {
 
   deploy(args) {
     this._ecr = new (this._getAWS()).ECR();
     this._ecs = new (this._getAWS()).ECS();
 
     this._sentContext = false;
-    if (!this.resources.project || !this.resources.service) {
-      console.log('You need to specify both service and project for Wedeploy');
-      return Promise.reject();
-    }
     this._maxStep = 2;
     this._cleanDockerfile = false;
 
     return this._createRepository().then( () => {
-      return this.checkDockerfile();
+      return this.buildDocker('277712386420.dkr.ecr.us-east-1.amazonaws.com/webda-demo/api', null, this.getDockerfile('worker Worker'));
     }).then(() => {
-      return this.wedeploy();
+      return this._createVPC();
     }).then(() => {
-      return this.cleanDockerfile();
-    }).catch(() => {
-      return this.cleanDockerfile();
+      return this._createCluster();
     });
   }
 
   _createRepository() {
-    this._ecr.describeRepositories({repositoryNames: []}).promise().then( (res) => {
-      console.log('repository', res);
-    })
+    let repositories = [];
+    let namespace = this.resources.repositoryNamespace || this.resources.serviceName;
+    this.resources.workers.forEach( (worker) => {
+      repositories.push((namespace + '/' + worker).toLowerCase());
+    });
+    // Might want to use only one repository with tagging to optimize storage
+    return this._ecr.describeRepositories({}).promise().then( (res) => {
+      res.repositories.forEach( (repo) => {
+        let idx = repositories.indexOf(repo.repositoryName);
+        if (idx >= 0) {
+          repositories.splice(idx, 1);
+        }
+      });
+      let promise = Promise.resolve();
+      repositories.forEach( (repo) => {
+        promise = promise.then( () => {
+          console.log('Create repository', repo);
+          return this._ecr.createRepository({repositoryName: repo}).promise();
+        });
+      });
+      return promise;
+    });
   }
 
   _createTaskDefinition() {
-
+    return Promise.resolve();
   }
 
   _createCluster() {
-    this._ecs.describeClusters().promise().then( (res) => {
+    return this._ecs.describeClusters().promise().then( (res) => {
       console.log('cluster', res);
     });
   }
 
   _createVPC() {
-
-  }
-
-  wedeploy() {
-    var args = ["deploy", "-p", this.resources.project, "-s", this.resources.service];
-    return this.execute("we", args, this.out.bind(this), this.out.bind(this));
+    return Promise.resolve();
   }
 
   out(data) {
     data = data.toString();
     // Should filter output
     console.log(data);
-  }
-
-  checkDockerfile() {
-    this.stepper("Checking Dockerfile");
-    return new Promise((resolve, reject) => {
-      this._cleanDockerfile = true;
-      if (this.resources.Dockerfile === 'Dockerfile') {
-        this._cleanDockerfile = false;
-        return;
-      } else if (this.resources.Dockerfile) {
-        fs.copyFileSync(this.resources.Dockerfile, this.getDockerfileName());
-      } else {
-        fs.writeFileSync(this.getDockerfileName(), this.getDockerfile(this.resources.logfile, this.resources.command));
-        this.resources.Dockerfile = this.getDockerfileName();
-      }
-      resolve();
-      return;
-    });
-  }
-
-  getDockerfileName() {
-    // Cannot specify the Dockerfile name yet
-    return './Dockerfile';
   }
 
   static getModda() {
@@ -94,12 +80,7 @@ class FargateDeployer extends AWSDeployer {
           "url": "elements/deployers/webda-fargate-deployer.html"
         },
         "default": {
-          "params": {},
-          "resources": {
-            "project": "projectName",
-            "service": "serviceName"
-          },
-          "services": {}
+          "workers": []
         },
         "schema": {
           type: "object"

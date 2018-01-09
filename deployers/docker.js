@@ -1,9 +1,8 @@
 "use strict";
-const ShellDeployer = require("./shell");
-const fs = require('fs');
-const crypto = require('crypto');
+const Deployer = require("./deployer");
+const DockerMixIn = require("./docker-mixin");
 
-class DockerDeployer extends ShellDeployer {
+class DockerDeployer extends DockerMixIn(Deployer) {
 
   deploy(args) {
     this._sentContext = false;
@@ -13,109 +12,22 @@ class DockerDeployer extends ShellDeployer {
     }
     this._cleanDockerfile = false;
 
-    return this.checkDockerfile().then(() => {
-      return this.buildDocker();
-    }).then(() => {
+    return this.buildDocker().then(() => {
       if (!this.resources.tag || !this.resources.push) {
         return Promise.resolve();
       }
       return this.pushDocker();
-    }).then(() => {
-      return this.cleanDockerfile();
-    }).catch(() => {
-      return this.cleanDockerfile();
     });
-  }
-
-  cleanDockerfile() {
-    if (this._cleanDockerfile) {
-      fs.unlinkSync("./Dockerfile")
-    }
-  }
-
-  out(data) {
-    data = data.toString();
-    if (data.startsWith("Sending build context to Docker daemon")) {
-      if (this._sentContext) {
-        return;
-      }
-      this._sentContext = true;
-      console.log("Sending build context to Docker daemon");
-      return;
-    }
-    // Should filter output
-    console.log(data);
   }
 
   buildDocker() {
     this.stepper("Building Docker image");
-    var args = [];
-    args.push("build");
-    if (this.resources.tag) {
-      args.push("--tag");
-      args.push(this.resources.tag);
-    }
-    if (this.resources.Dockerfile) {
-      args.push("--file");
-      args.push(this.resources.Dockerfile);
-    }
-    args.push(".");
-    console.log("docker " + args.join(" "));
-    return this.execute("docker", args, this.out.bind(this), this.out.bind(this));
+    return super.buildDocker(this.resources.tag, this.resources.Dockerfile, this.getDockerfile());
   }
 
   pushDocker() {
     this.stepper("Pushing Docker image");
-    var args = [];
-    args.push("push");
-    args.push(this.resources.tag);
-    return this.execute("docker", args, this.out.bind(this), this.out.bind(this));
-  }
-
-  getDockerfileName() {
-    return './.webda.Dockerfile';
-  }
-
-  checkDockerfile() {
-    this.stepper("Checking Dockerfile");
-    return new Promise((resolve, reject) => {
-      if (this.resources.Dockerfile) {
-        resolve();
-        return;
-      }
-      if (!this.resources.Dockerfile) {
-        this._cleanDockerfile = true;
-        fs.writeFileSync(this.getDockerfileName(), this.getDockerfile(this.resources.logfile, this.resources.command));
-        this.resources.Dockerfile = this.getDockerfileName();
-      }
-      resolve();
-    });
-  }
-
-  getDockerfile(logfile, command) {
-    var dockerfile = `
-FROM node:latest
-MAINTAINER docker@webda.io
-
-RUN mkdir /server/
-ADD . /server/
-
-RUN cd /server && rm -rf node_modules && npm install
-`;
-    console.log('getDockerfile');
-    if (!command) {
-      command = 'serve';
-    }
-    if (logfile) {
-      logfile = ' > ' + logfile;
-    }
-    if (!this.deployment.uuid) {
-      // Export deployment
-      dockerfile += 'RUN cd /server && webda -d ' + this.deployment.uuid + ' config webda.config.json\n';
-    }
-    dockerfile += 'RUN cd /server && rm -rf deployments\n';
-    dockerfile += 'CMD cd /server && node_modules/.bin/webda ' + command + logfile + '\n'
-    return dockerfile;
+    super.pushDocker(this.resources.tag);
   }
 
   static getModda() {

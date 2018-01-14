@@ -37,11 +37,14 @@ class FargateDeployer extends DockerMixIn(AWSDeployer) {
         if (worker.name !== 'API') {
           cmd = 'worker ' + worker.name;
         }
+        console.log('Building the image');
         return this.buildDocker(worker.repository, null, this.getDockerfile(cmd)).then( () => {
-          this.pushDocker(worker.repository);
+          console.log('Pushing the image');
+          return this.pushDocker(worker.repository);
         });
       })
     }
+    return promise;
   }
 
   _createService() {

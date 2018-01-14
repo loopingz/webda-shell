@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 //var fakeVhosts = ["*", "api.shootandprove.loopingz.com"];
 var Webda = {
   services: {},
-  workers: {},
+  workers: [],
   deployers: {}
 };
 (function(document) {
@@ -205,8 +205,9 @@ var Webda = {
     console.log(Webda);
     for (var i in app.services) {
       Webda.services[app.services[i]._name] = app.services[i];
-      if (app.services[i].worker) {
-        Webda.workers[app.services[i]._name] = app.services[i];
+      if (app.services[i]._worker) {
+        console.log('adding', app.services[i]._name, 'to worker');
+        Webda.workers.push(app.services[i]);
       }
       app.mapServices[app.services[i]._name]=app.services[i];
     }

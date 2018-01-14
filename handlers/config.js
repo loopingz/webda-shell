@@ -253,10 +253,14 @@ class ` + className + ` extends ` + extendName + ` {
   crudService(ctx) {
     if (ctx._route._http.method === "GET") {
       var services = [];
+      let servicesBeans = this._webda._mockWedba.getServices();
       for (let i in this._config.services) {
         let service = this._config.services[i];
         service._name = i;
         service._type = "Service";
+        if (servicesBeans[i.toLowerCase()] && servicesBeans[i.toLowerCase()].work) {
+          service._worker = true;
+        }
         services.push(service);
       }
       services.sort(function (a, b) {
@@ -526,7 +530,7 @@ class WebdaConfigurationServer extends WebdaServer {
    * @param {Object} Teh deployment to resolve
    */
   resolveConfiguration(config, deployment) {
-    if (deployment.resources.region && !deployment.params.region) {
+    if (deployment.resources.region && !deployment.parameters.region) {
       deployment.parameters.region = deployment.resources.region;
     }
     merge.recursive(config.parameters, deployment.parameters);

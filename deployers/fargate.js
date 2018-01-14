@@ -1,7 +1,6 @@
 "use strict";
 const AWSDeployer = require("./aws");
 const DockerMixIn = require("./docker-mixin");
-const fs = require('fs');
 
 class FargateDeployer extends DockerMixIn(AWSDeployer) {
 
@@ -11,21 +10,50 @@ class FargateDeployer extends DockerMixIn(AWSDeployer) {
 
     this._sentContext = false;
     this._maxStep = 2;
-    this._cleanDockerfile = false;
 
     return this._createRepository().then( () => {
-      return this.buildDocker('277712386420.dkr.ecr.us-east-1.amazonaws.com/webda-demo/api', null, this.getDockerfile('worker Worker'));
+      return this.buildDockers();
     }).then(() => {
-      return this._createVPC();
+      return this._createTaskDefinition();
     }).then(() => {
       return this._createCluster();
+    }).then(() => {
+      return this._createService();
     });
+  }
+
+  buildDockers() {
+    let promise = this._ecr.getAuthorizationToken({}).promise().then( (res) => {
+      // Login to the AWS repository
+      let creds = Buffer.from(res.authorizationData[0].authorizationToken, 'base64').toString();
+      creds = creds.substr(4);
+      let repo = res.authorizationData[0].proxyEndpoint;
+      return this.execute('docker', ['login', '--username', 'AWS', '--password-stdin', repo], this.out.bind(this), this.out.bind(this), creds);
+    });
+    for (let i in this._workers) {
+      let worker = this._workers[i];
+      promise = promise.then( () => {
+        let cmd = '';
+        if (worker.name !== 'API') {
+          cmd = 'worker ' + worker.name;
+        }
+        return this.buildDocker(worker.repository, null, this.getDockerfile(cmd)).then( () => {
+          this.pushDocker(worker.repository);
+        });
+      })
+    }
+  }
+
+  _createService() {
+
   }
 
   _createRepository() {
     let repositories = [];
+    this._workers = {};
     let namespace = this.resources.repositoryNamespace || this.resources.serviceName;
     this.resources.workers.forEach( (worker) => {
+      this._workers[worker.toLowerCase()] = {name: worker};
       repositories.push((namespace + '/' + worker).toLowerCase());
     });
     // Might want to use only one repository with tagging to optimize storage
@@ -33,6 +61,7 @@ class FargateDeployer extends DockerMixIn(AWSDeployer) {
       res.repositories.forEach( (repo) => {
         let idx = repositories.indexOf(repo.repositoryName);
         if (idx >= 0) {
+          this._workers[repo.repositoryName.split('/')[1]].repository = repo.repositoryUri;
           repositories.splice(idx, 1);
         }
       });
@@ -40,7 +69,10 @@ class FargateDeployer extends DockerMixIn(AWSDeployer) {
       repositories.forEach( (repo) => {
         promise = promise.then( () => {
           console.log('Create repository', repo);
-          return this._ecr.createRepository({repositoryName: repo}).promise();
+          return this._ecr.createRepository({repositoryName: repo}).promise().then( (res) => {
+            let repo = res.repository;
+            this._workers[repo.repositoryName.split('/')[1]].repository = repo.repositoryUri;
+          });
         });
       });
       return promise;
@@ -48,7 +80,22 @@ class FargateDeployer extends DockerMixIn(AWSDeployer) {
   }
 
   _createTaskDefinition() {
-    return Promise.resolve();
+    let taskDefinition = this.resources.taskDefinition || this.resources.serviceName;
+    return this._ecs.listTaskDefinitions().promise().then( (res) => {
+      console.log(res);
+      if (!this._taskDefinition) {
+        return;
+        let containerDefinitions = [];
+        return this._ecs.createTaskDefinition(
+          {
+            containerDefinitions: containerDefinitions,
+            family: 'webda',
+            taskRoleArn: '',
+            volumes: []
+          }
+        ).promise();
+      }
+    });
   }
 
   _createCluster() {

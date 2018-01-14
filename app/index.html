@@ -110,7 +110,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </section>
           <section data-route="services">
             <template is="dom-repeat" items="{{services}}">
-              <configuration-item on-click="onSelectService" data-index="{{index}}" selected-index="[[selectedIndex]]">{{ item._name }}</configuration-item>
+              <configuration-item on-click="onSelectService" data-index="{{index}}" selected-index="[[selectedIndex]]">{{ item._name }}<template is="dom-if" if="[[item._worker]]"><iron-icon icon="settings" ></iron-icon></template></configuration-item>
             </template>
           </section>
           <section data-route="models">

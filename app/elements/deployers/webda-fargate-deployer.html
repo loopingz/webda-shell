@@ -22,20 +22,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
     <div>
       <paper-input label="Cluster name" value="{{configuration.clusterName}}" placeholder="webda-cluster"></paper-input>
-      <paper-input label="VPC" value="{{configuration.vpcId}}" placeholder=""></paper-input>
-      <div>
-        <label>Tasks</label>
-        <paper-dropdown-menu label="Mode" vertical-align="bottom">
-          <paper-listbox class="dropdown-content deploymentSelector" attr-for-selected="uuid" selected="{{activeDeployment}}">
-            <paper-item uuid="">API</paper-item>
-            <template is="dom-repeat" items="{{workers}}">
-              <paper-item uuid="[[item.uuid]]">Worker [[item.uuid]]</paper-item>
-            </template>
-          </paper-listbox>
-        </paper-dropdown-menu>
-        <paper-button>Add</paper-button>
-      </div>
-      <paper-input label="Task Role" value="{{configuration.taskRole}}" placeholder="{{configuration.clusterName}}Role"></paper-input>
+      <paper-input label="Service name" value="{{configuration.serviceName}}" placeholder="Service name"></paper-input>
+      <paper-input label="Tasks #" value="{{configuration.tasksNumber}}" placeholder="2" type="number" min="1"></paper-input>
+      <paper-input label="Tasks definition name" value="{{configuration.taskDefinition}}" placeholder="[[configuration.serviceName]]"></paper-input>
+      <paper-input label="Repository namespace" value="{{configuration.repositoryNamespace}}" placeholder="[[configuration.serviceName]]"></paper-input>
+      <paper-input label="Task Role" value="{{configuration.taskRole}}" placeholder="{{configuration.serviceName}}FargateRole"></paper-input>
+      <paper-dropdown-menu label="Task memory" vertical-align="bottom">
+        <paper-listbox class="dropdown-content" attr-for-selected="value" selected="{{configuration.taskMemory}}" placeholder="1GB">
+          <paper-item value="0.5GB">0.5GB</paper-item>
+          <template is="dom-repeat" items="[[memoryOptions]]">
+            <paper-item value="[[item]]">[[item]]</paper-item>
+          </template>
+        </paper-listbox>
+      </paper-dropdown-menu>
+      <paper-dropdown-menu label="Task cpu" vertical-align="bottom">
+        <paper-listbox class="dropdown-content" attr-for-selected="value" selected="{{configuration.taskCpu}}" placeholder="0.5 vCPU">
+          <paper-item value="0.25 vCPU">0.25 vCPU</paper-item>
+          <paper-item value="0.5 vCPU">0.5 vCPU</paper-item>
+          <paper-item value="1 vCPU">1 vCPU</paper-item>
+          <paper-item value="2 vCPU">2 vCPU</paper-item>
+          <paper-item value="4 vCPU">4 vCPU</paper-item>
+        </paper-listbox>
+      </paper-dropdown-menu>
+      <webda-workers-selector label="Tasks" selection="{{configuration.workers}}" include-api>
+      </webda-workers-selector>
     </div>
   </template>
 
@@ -48,22 +58,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         properties: {
           configuration: {
             type: Object,
-            value: {},
-            notify: true
+            value: {
+              workers: []
+            },
+            notify: true,
+            observer: '_update'
           }
         },
         getConfiguration: function() {
           return this.configuration;
         },
-        setConfiguration: function(config) {
-          this.configuration = config;
+        _update: function() {
+          if (!this.configuration.workers) {
+            this.set('configuration.workers', []);
+          }
+          console.log(this.configuration);
         },
         validate: function() {
-          return this.configuration.source && this.configuration.target;
+          return true;
         },
         ready: function() {
+          let memoryOptions = [];
+          for (let i = 1; i < 31; i++) {
+            memoryOptions.push(i + 'GB');
+          }
+          this.memoryOptions = memoryOptions;
+          this.workers = Webda.workers;
         }
       });
     })();
   </script>
 </dom-module>
+

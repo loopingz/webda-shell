@@ -93,16 +93,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         is: 'new-deployment-dialog',
         behaviors: [Polymer.PaperDialogBehavior],
         validateForm: function() {
-          this.invalidForm = false;
-          return;
-          if (this.name && this.name !== '') {
+          if (!this.deployer) {
+            this.error = 'You need to select a type of deployer';
+            return false;
+          }
+          if (this.configuration.name && this.configuration.name !== '') {
             if (this.deployerConfigurator) {
-              this.invalidForm = !this.deployerConfigurator.validate();
-              return;
+              return this.deployerConfigurator.validate();
             }
-            this.invalidForm = false;
+            return true;
           } else {
-            this.invalidForm = true;
+            return false;
           }
         },
         _updateDeployer() {
@@ -111,7 +112,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.configuration.type = this.deployer.uuid;
         },
         create: function () {
-          this.configuration.name = this.name;
+          this.error = '';
+          if (!this.validateForm()) {
+            if (this.error === '') {
+              this.error = 'Form invalid';
+            }
+            return;
+          }
           this.configuration.type = this.deployer.uuid;
           this.dispatchEvent(new CustomEvent('add-deployment-unit', { detail: this.configuration, bubbles: true, composed: true }));
           this.close();
@@ -132,11 +139,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           deployer: {
             type: Object,
             observer: '_updateDeployer'
-          },
-          name: {
-            type: String,
-            value: '',
-            observer: 'validateForm'
           }
         },
         toggleEdit: function() {

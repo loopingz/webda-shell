@@ -225,7 +225,17 @@ function handleCommand(cmd) {
         process.exit(1);
       }
       // Launch the worker with arguments
-      return service[method].apply(service, argv._.slice(3));
+      let timestamp = new Date().getTime();
+      let promise = service[method].apply(service, argv._.slice(3));
+      if (promise instanceof Promise) {
+        return promise.catch( (err) => {
+          console.log('An error occured', err);
+        });
+      }
+      return Promise.resolve(promise).then( () => {
+        let seconds = ((new Date().getTime()) - timestamp) / 1000;
+        console.log('Took', Math.ceil(seconds) + 's');
+      });
     case 'debug':
       let launchServe = function () {
         if (server_pid) {

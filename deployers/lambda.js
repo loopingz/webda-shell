@@ -7,110 +7,6 @@ const LAMBDA_ROLE_POLICY = '{"Version":"2012-10-17","Statement":[{"Effect":"Allo
 
 class LambdaDeployer extends AWSDeployer {
 
-  _getObjectTypeName(type) {
-    return this._lambdaFunctionName + type;
-  }
-
-  generateARN(args) {
-    let services = this.getServices();
-    let roleName = this._getObjectTypeName('Role');
-    let policyName = this._getObjectTypeName('Policy');
-    let sts = new (this._AWS).STS();
-    let iam = new (this._AWS).IAM();
-
-    return sts.getCallerIdentity().promise().then( (id) => {
-      // arn:aws:logs:us-east-1:123456789012:*
-      let statements = [];
-      this.resources.AWSAccountId = id.Account;
-
-      if (this.resources.lambdaRole) {
-        return Promise.resolve();
-      }
-
-      // Build policy
-      for (let i in services) {
-        if (services[i].getARNPolicy) {
-          // Update to match recuring policy - might need to split if policy too big
-          statements.push(services[i].getARNPolicy(id.Account));
-        }
-      }
-      statements.push({
-          "Sid": "WebdaLambdaLog",
-          "Effect": "Allow",
-          "Action": [
-              "logs:CreateLogGroup",
-              "logs:CreateLogStream",
-              "logs:PutLogEvents"
-          ],
-          "Resource": [
-              "arn:aws:logs:" + this._AWS.config.region + ":" + id.Account + ":*"
-          ]
-      });
-      let policyDocument = {
-        "Version": "2012-10-17",
-        "Statement": statements
-      }
-      let policy;
-      return iam.listPolicies({PathPrefix: '/webda/'}).promise().then( (data) => {
-        for (let i in data.Policies) {
-          if (data.Policies[i].PolicyName === policyName) {
-            policy = data.Policies[i];
-          }
-        }
-        if (!policy) {
-          console.log('Creating AWS Policy', policyName);
-          // Create the policy has it doesnt not exist
-          return iam.createPolicy({PolicyDocument: JSON.stringify(policyDocument), PolicyName: policyName, Description: 'webda-generated', Path: '/webda/'}).promise().then( (data) => {
-            policy = data.Policy;
-          });
-        } else {
-          // Compare policy with the new one
-          return iam.getPolicyVersion({PolicyArn: policy.Arn, VersionId: policy.DefaultVersionId}).promise().then( (data) => {
-            // If nothing changed just continue
-            if (decodeURIComponent(data.PolicyVersion.Document) === JSON.stringify(policyDocument)) {
-              return Promise.resolve();
-            }
-            console.log('Update AWS Policy', policyName);
-            // Create new version for the policy
-            return iam.createPolicyVersion({PolicyArn: policy.Arn, PolicyDocument: JSON.stringify(policyDocument), SetAsDefault: true}).promise().then( () => {
-              // Remove old version
-              return iam.deletePolicyVersion({PolicyArn: policy.Arn, VersionId: policy.DefaultVersionId}).promise();
-            });
-          })
-        }
-      }).then( () => {
-        //
-        return iam.listRoles({PathPrefix: '/webda/'}).promise().then( (data) => {
-          let role;
-          for (let i in data.Roles) {
-            if (data.Roles[i].RoleName === roleName) {
-              role = data.Roles[i];
-              this._lambdaRole = role.Arn;
-            }
-          }
-          if (!role) {
-            console.log('Creating AWS Role', roleName);
-            return iam.createRole({Description: 'webda-generated', Path: '/webda/', RoleName: roleName, AssumeRolePolicyDocument: LAMBDA_ROLE_POLICY}).promise().then( (res) => {
-              return Promise.resolve(res.Role);
-            });
-          }
-          return Promise.resolve(role);
-        }).then( (role) => {
-          this._lambdaRole = role.Arn;
-          return iam.listAttachedRolePolicies({RoleName: roleName}).promise();
-        }).then( (data) => {
-          for (let i in data.AttachedPolicies) {
-            if (data.AttachedPolicies[i].PolicyName === policyName) {
-              return Promise.resolve();
-            }
-          }
-          console.log('Attaching AWS Policy', policyName, 'to', roleName);
-          return iam.attachRolePolicy({PolicyArn: policy.Arn, RoleName: roleName}).promise();
-        });
-      });
-    });
-  }
-
   transformRestApiToFunctionName(name) {
     return name.replace(/[^a-zA-Z0-9_]/g, '-');
   }
@@ -133,7 +29,8 @@ class LambdaDeployer extends AWSDeployer {
 
     var promise = Promise.resolve();
     if (args[0] !== "package") {
-      promise = this.generateARN().then( () => {
+      promise = this.generateRoleARN(this._restApiName + 'Lambda', LAMBDA_ROLE_POLICY, this._lambdaRole).then( (roleArn) => {
+        this._lambdaRole = roleArn;
         if (!this._lambdaRole.startsWith("arn:aws")) {
           // Try to get the Role ARN ?
           throw Error("LambdaRole needs to be the ARN of the Role");

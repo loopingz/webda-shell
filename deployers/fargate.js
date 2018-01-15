@@ -1,19 +1,32 @@
 "use strict";
 const AWSDeployer = require("./aws");
 const DockerMixIn = require("./docker-mixin");
+const ECS_ROLE_POLICY = '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"ecs-tasks.amazonaws.com"},"Action":"sts:AssumeRole"}]}';
 
 class FargateDeployer extends DockerMixIn(AWSDeployer) {
 
   deploy(args) {
+    this._AWS = this._getAWS(this.resources);
     this._ecr = new (this._getAWS()).ECR();
     this._ecs = new (this._getAWS()).ECS();
 
     this._sentContext = false;
     this._maxStep = 2;
 
+    this._workers = {};
+    this.resources.workers.forEach( (worker) => {
+      this._workers[worker.toLowerCase()] = {name: worker};
+    });
+
     return this._createRepository().then( () => {
       return this.buildDockers();
     }).then(() => {
+      if (this.resources.taskRole) {
+        return Promise.resolve(this.resources.taskRole);
+      }
+      return this.generateRoleARN(this.resources.serviceName, ECS_ROLE_POLICY);
+    }).then((res) => {
+      this._taskRole = res;
       return this._createTaskDefinition();
     }).then(() => {
       return this._createCluster();
@@ -53,10 +66,8 @@ class FargateDeployer extends DockerMixIn(AWSDeployer) {
 
   _createRepository() {
     let repositories = [];
-    this._workers = {};
     let namespace = this.resources.repositoryNamespace || this.resources.serviceName;
     this.resources.workers.forEach( (worker) => {
-      this._workers[worker.toLowerCase()] = {name: worker};
       repositories.push((namespace + '/' + worker).toLowerCase());
     });
     // Might want to use only one repository with tagging to optimize storage
@@ -82,22 +93,69 @@ class FargateDeployer extends DockerMixIn(AWSDeployer) {
     });
   }
 
-  _createTaskDefinition() {
-    let taskDefinition = this.resources.taskDefinition || this.resources.serviceName;
-    return this._ecs.listTaskDefinitions().promise().then( (res) => {
-      console.log(res);
-      if (!this._taskDefinition) {
-        return;
-        let containerDefinitions = [];
-        return this._ecs.createTaskDefinition(
-          {
-            containerDefinitions: containerDefinitions,
-            family: 'webda',
-            taskRoleArn: '',
-            volumes: []
-          }
-        ).promise();
+  _getWorkersDefinition() {
+    let containerDefinitions = [];
+    for (let i in this._workers) {
+      let worker = this._workers[i];
+      containerDefinitions.push({
+        name: i,
+        essential: true,
+        image: worker.repository
+      });
+    }
+    return containerDefinitions;
+  }
+
+  _needWorkersDefinitionUpdate(oldDef) {
+    let newDef = this._getWorkersDefinition();
+    // For now let's expected the order to be the same
+    // TODO Easy improvement - implement order check
+    let res = false;
+    // For each worker definition
+    for (let i in newDef) {
+      // For each key defined for this worker
+      for (let k in newDef[i]) {
+        if (newDef[i][k] !== oldDef[i][k]) {
+          return true;
+        }
       }
+    }
+    return false;
+  }
+
+  _registerTaskDefinition(taskDefinition) {
+    return this._ecs.registerTaskDefinition(
+      {
+        containerDefinitions: this._getWorkersDefinition(),
+        family: taskDefinition,
+        taskRoleArn: '',
+        volumes: [],
+        requiresCompatibilities: ['FARGATE'],
+        networkMode: 'awsvpc',
+        cpu: '1024',
+        memory: '2048',
+        executionRoleArn: 'arn:aws:iam::277712386420:role/ecsTaskExecutionRole'
+      }
+    ).promise().then( (res) => {
+      this._taskDefinitionArn = res.taskDefinition.taskDefinitionArn;
+    });
+  }
+
+  _createTaskDefinition() {
+    // Check role ARN for cloudwatch and pull images
+    let taskDefinition = this.resources.taskDefinition || this.resources.serviceName;
+    //taskDefinition = 'webda-demo-fargate'
+    return this._ecs.describeTaskDefinition({taskDefinition: taskDefinition}).promise().then( (res) => {
+      console.log(res.taskDefinition.containerDefinitions, this._getWorkersDefinition());
+      if (this._needWorkersDefinitionUpdate(res.taskDefinition.containerDefinitions)) {
+        console.log('Need to update the task definition');
+        return this._registerTaskDefinition(taskDefinition);
+      }
+      this._taskDefinitionArn = res.taskDefinition.taskDefinitionArn;
+      return Promise.resolve();
+    }).catch( (err) => {
+      // Describe throw an error if not found
+      return this._registerTaskDefinition(taskDefinition);
     });
   }
 

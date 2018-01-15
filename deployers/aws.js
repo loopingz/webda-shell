@@ -175,6 +175,20 @@ class AWSDeployer extends AWSServiceMixin(Deployer) {
     });
   }
 
+  getARNPolicy(accountId, region) {
+    return [{
+      "Sid": "WebdaLog",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": [
+        "arn:aws:logs:" + region + ":" + accountId + ":*"
+      ]
+    }];
+  }
 
   generateRoleARN(name, assumeRolePolicy, roleName, policyName) {
     let services = this.getServices();
@@ -198,21 +212,15 @@ class AWSDeployer extends AWSServiceMixin(Deployer) {
       for (let i in services) {
         if (services[i].getARNPolicy) {
           // Update to match recuring policy - might need to split if policy too big
-          statements.push(services[i].getARNPolicy(id.Account));
+          let res = services[i].getARNPolicy(id.Account, this._AWS.config.region);
+          if (Array.isArray(res)) {
+            Array.prototype.push.apply(statements, res);
+          } else {
+            statements.push(res);
+          }
         }
       }
-      statements.push({
-        "Sid": "WebdaLog",
-        "Effect": "Allow",
-        "Action": [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ],
-        "Resource": [
-          "arn:aws:logs:" + this._AWS.config.region + ":" + id.Account + ":*"
-        ]
-      });
+      Array.prototype.push.apply(statements, this.getARNPolicy(id.Account, this._AWS.config.region));
       let policyDocument = {
         "Version": "2012-10-17",
         "Statement": statements

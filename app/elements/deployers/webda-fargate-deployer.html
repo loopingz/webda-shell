@@ -23,25 +23,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div>
       <paper-input label="Cluster name" value="{{configuration.clusterName}}" placeholder="webda-cluster"></paper-input>
       <paper-input label="Service name" value="{{configuration.serviceName}}" placeholder="Service name"></paper-input>
+      <paper-input label="VPC Subnets" value="{{configuration.subnets}}" placeholder="Subnets to use, by default any subnet of default VPC"></paper-input>
+      <paper-input label="VPC Subnets" value="{{configuration.securityGroup}}" placeholder="Security group to use, or default security group for the VPC"></paper-input>
       <paper-input label="Tasks #" value="{{configuration.tasksNumber}}" placeholder="2" type="number" min="1"></paper-input>
       <paper-input label="Tasks definition name" value="{{configuration.taskDefinition}}" placeholder="[[configuration.serviceName]]"></paper-input>
       <paper-input label="Repository namespace" value="{{configuration.repositoryNamespace}}" placeholder="[[configuration.serviceName]]"></paper-input>
       <paper-input label="Task Role" value="{{configuration.taskRole}}" placeholder="{{configuration.serviceName}}FargateRole"></paper-input>
       <paper-dropdown-menu label="Task memory" vertical-align="bottom">
         <paper-listbox class="dropdown-content" attr-for-selected="value" selected="{{configuration.taskMemory}}" placeholder="1GB">
-          <paper-item value="0.5GB">0.5GB</paper-item>
+          <paper-item value="512">0.5GB</paper-item>
           <template is="dom-repeat" items="[[memoryOptions]]">
-            <paper-item value="[[item]]">[[item]]</paper-item>
+            <paper-item value="[[item.value]]">[[item.label]]</paper-item>
           </template>
         </paper-listbox>
       </paper-dropdown-menu>
       <paper-dropdown-menu label="Task cpu" vertical-align="bottom">
         <paper-listbox class="dropdown-content" attr-for-selected="value" selected="{{configuration.taskCpu}}" placeholder="0.5 vCPU">
-          <paper-item value="0.25 vCPU">0.25 vCPU</paper-item>
-          <paper-item value="0.5 vCPU">0.5 vCPU</paper-item>
-          <paper-item value="1 vCPU">1 vCPU</paper-item>
-          <paper-item value="2 vCPU">2 vCPU</paper-item>
-          <paper-item value="4 vCPU">4 vCPU</paper-item>
+          <paper-item value="256">0.25 vCPU</paper-item>
+          <paper-item value="512">0.5 vCPU</paper-item>
+          <paper-item value="1024">1 vCPU</paper-item>
+          <paper-item value="2048">2 vCPU</paper-item>
+          <paper-item value="4096">4 vCPU</paper-item>
         </paper-listbox>
       </paper-dropdown-menu>
       <webda-workers-selector label="Tasks" selection="{{configuration.workers}}" include-api>
@@ -80,7 +82,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         ready: function() {
           let memoryOptions = [];
           for (let i = 1; i < 31; i++) {
-            memoryOptions.push(i + 'GB');
+            memoryOptions.push({value: (i * 1024).toString(), label: i + 'GB'});
           }
           this.memoryOptions = memoryOptions;
           this.workers = Webda.workers;

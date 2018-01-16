@@ -10,7 +10,6 @@ class DockerDeployer extends DockerMixIn(Deployer) {
     if (!this.resources.tag || !this.resources.push) {
       this._maxStep = 2;
     }
-    this._cleanDockerfile = false;
 
     return this.buildDocker().then(() => {
       if (!this.resources.tag || !this.resources.push) {
@@ -27,7 +26,7 @@ class DockerDeployer extends DockerMixIn(Deployer) {
 
   pushDocker() {
     this.stepper("Pushing Docker image");
-    super.pushDocker(this.resources.tag);
+    return super.pushDocker(this.resources.tag);
   }
 
   static getModda() {
@@ -42,10 +41,7 @@ class DockerDeployer extends DockerMixIn(Deployer) {
           "tag": "webda-docker-deployer",
           "url": "elements/deployers/webda-docker-deployer.html"
         },
-        "default": {
-          "tag": "ImageTag",
-          "push": false
-        },
+        "default": {},
         "schema": {
           type: "object"
         }

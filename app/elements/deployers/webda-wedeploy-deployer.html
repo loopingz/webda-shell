@@ -21,16 +21,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
     <div>
-      <paper-input label="Docker tag" value="{{configuration.tag}}"></paper-input>
-      <paper-toggle-button value="{{configuration.push}}">Push tag</paper-toggle-button>
-      <paper-dropdown-menu label="Mode" vertical-align="bottom">
-        <paper-listbox class="dropdown-content deploymentSelector" attr-for-selected="uuid" selected="{{activeDeployment}}">
-          <paper-item uuid="">API</paper-item>
-          <template is="dom-repeat" items="{{workers}}">
-            <paper-item uuid="[[item.uuid]]">Worker [[item.uuid]]</paper-item>
-          </template>
-        </paper-listbox>
-      </paper-dropdown-menu>
+      <paper-input label="WeDeploy Project" value="{{configuration.project}}"></paper-input>
+      <paper-input label="WeDeploy Service" value="{{configuration.service}}"></paper-input>
+      <webda-worker-selector include-api item="{{configuration.worker}}"></webda-worker-selector>
     </div>
   </template>
 

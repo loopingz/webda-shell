@@ -65,13 +65,10 @@ class WeDeployDeployer extends DockerDeployer {
       "webcomponents": [],
       "logo": "images/icons/wedeploy.png",
       "configuration": {
-        "default": {
-          "params": {},
-          "resources": {
-            "project": "projectName",
-            "service": "serviceName"
-          },
-          "services": {}
+        "default": {},
+        "widget": {
+          "tag": "webda-wedeploy-deployer",
+          "url": "elements/deployers/webda-wedeploy-deployer.html"
         },
         "schema": {
           type: "object"

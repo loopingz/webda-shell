@@ -201,6 +201,10 @@ var Webda = {
     app.newEnable = app.route !== 'configuration';
   }
 
+  Webda.getWorkers = function() {
+    return JSON.parse(JSON.stringify(Webda.workers));
+  }
+
   app.mapServices = function(evt) {
     console.log(Webda);
     for (var i in app.services) {

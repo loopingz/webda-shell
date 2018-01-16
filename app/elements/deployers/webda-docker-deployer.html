@@ -21,16 +21,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
     <div>
-      <paper-input label="Docker tag" value="{{configuration.tag}}"></paper-input>
-      <paper-toggle-button value="{{configuration.push}}">Push tag</paper-toggle-button>
-      <paper-dropdown-menu label="Mode" vertical-align="bottom">
-        <paper-listbox class="dropdown-content deploymentSelector" attr-for-selected="uuid" selected="{{configuration.worker}}">
-          <paper-item uuid="">API</paper-item>
-          <template is="dom-repeat" items="{{workers}}">
-            <paper-item uuid="[[item.uuid]]">Worker [[item.uuid]]</paper-item>
-          </template>
-        </paper-listbox>
-      </paper-dropdown-menu>
+      <paper-input label="Docker tag" value="{{configuration.tag}}" placeholder="Image Tag name"></paper-input>
+      <paper-toggle-button checked="{{configuration.push}}">Push tag</paper-toggle-button>
+      <webda-worker-selector include-api item="{{configuration.worker}}"></webda-worker-selector>
     </div>
   </template>
 
@@ -44,13 +37,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           configuration: {
             type: Object,
             value: {},
-            notify: true
+            notify: true,
+            observer: '_update'
+          }
+        },
+        _update: function() {
+          if (!this.configuration.worker) {
+            this.set('configuration.worker', '');
           }
         },
         validate: function() {
-          return this.configuration.source && this.configuration.target;
+          return this.configuration.tag && this.configuration.worker;
         },
         ready: function() {
+
         }
       });
     })();

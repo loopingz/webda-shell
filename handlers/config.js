@@ -428,6 +428,19 @@ class WebdaConfigurationServer extends WebdaServer {
     this._deployers["WebdaDeployer/WeDeploy"] = require("../deployers/wedeploy");
   }
 
+  /**
+   * Load the deployers in addition to the normal super
+   *
+   * @protected
+   * @ignore Useless for documentation
+   */
+  _loadModule(info) {
+    super._loadModules(info);
+    for (let key in info.deployers) {
+      this._deployers[key] = require(info.deployers[key]);
+    }
+  }
+
   exportJson(o) {
     // Credit to : http://stackoverflow.com/questions/11616630/json-stringify-avoid-typeerror-converting-circular-structure-to-json
     var cache = [];

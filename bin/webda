@@ -280,7 +280,10 @@ function handleCommand(cmd) {
       return;
     case 'config':
       if (argv.deployment) {
-        server_config = new config().loadDeploymentConfig(argv.deployment);
+        let webda = new config();
+        server_config = webda.loadDeploymentConfig(argv.deployment);
+        // Caching the modules
+        server_config.cachedModules = webda._modules;
         let json = JSON.stringify(server_config, null, ' ');
         if (argv._.length > 1) {
           fs.writeFileSync(argv._[1], json);

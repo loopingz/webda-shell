@@ -435,7 +435,7 @@ class WebdaConfigurationServer extends WebdaServer {
    * @ignore Useless for documentation
    */
   _loadModule(info) {
-    super._loadModules(info);
+    super._loadModule(info);
     for (let key in info.deployers) {
       this._deployers[key] = require(info.deployers[key]);
     }

@@ -55,7 +55,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
           // Add modda
           if (this.modda) {
-            this.configuration = JSON.parse(JSON.stringify(this.modda.configuration.default));
+            this.configuration = this.configuration || JSON.parse(JSON.stringify(this.modda.configuration.default));
             // Add configuration widget if exists
             this.moddaConfigurator = undefined;
             if (this.modda.configuration.widget && this.modda.configuration.widget.url) {

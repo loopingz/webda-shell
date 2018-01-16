@@ -143,11 +143,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
           // Search for the deployers
           this.deployers.forEach( (deployer) => {
-            console.log(this.activeUnit.type, deployer.uuid, this.activeUnit.type !== deployer.uuid)
             if (this.activeUnit.type !== deployer.uuid) return;
             this.activeUnitDeployer = deployer;
           });
-          console.log(this.activeUnit, this.activeUnitDeployer);
         },
         _addUnit: function() {
           this.$.newDeploymentDialog.open();
@@ -163,7 +161,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.active = (app.currentDeployment && this.component && app.currentDeployment._name == this.component._name);
           if (!this.component) return;
           if (this.component._type !== 'deployment') return;
-          console.log(this.component.parameters);
           this.services.forEach( (service) => {
             this.component.services[service._name] = this.component.services[service._name] || {};
           });

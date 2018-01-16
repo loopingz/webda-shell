@@ -554,7 +554,8 @@ class WebdaConfigurationServer extends WebdaServer {
         console.log("Deployment " + env + " unknown");
         return Promise.reject();
       }
-      this.resolveConfiguration(this.config[this.getHost()], deployment);
+      this.resolveConfiguration(this.config, deployment);
+      this.config.cachedModules = this._modules;
       let srcConfig = this.exportJson(this.config);
       return new this._deployers[deployment.type](this.computeConfig, srcConfig, deployment).installServices(args);
     });
@@ -602,6 +603,7 @@ class WebdaConfigurationServer extends WebdaServer {
       }
       // Reload with the resolved configuration
       this.resolveConfiguration(this.config, deployment);
+      this.config.cachedModules = this._modules;
       let srcConfig = this.exportJson(this.config);
       this.loadMock(this.config);
 

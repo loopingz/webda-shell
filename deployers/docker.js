@@ -21,7 +21,11 @@ class DockerDeployer extends DockerMixIn(Deployer) {
 
   buildDocker() {
     this.stepper("Building Docker image");
-    return super.buildDocker(this.resources.tag, this.resources.Dockerfile, this.getDockerfile());
+    let cmd = '';
+    if (this.resources.worker !== 'API') {
+      cmd = 'worker ' + this.resources.worker;
+    }
+    return super.buildDocker(this.resources.tag, this.resources.Dockerfile, this.getDockerfile(cmd));
   }
 
   pushDocker() {

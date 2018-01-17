@@ -26,6 +26,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
     <div align="center">
       <div id="configurationWidget"></div>
+      <paper-icon-button icon="list" title="View full parameters" on-tap="showFull" style="float:right; margin-top: -16px;"></paper-icon-button>
       <label>Configuration</label>
       <juicy-jsoneditor mode="{{mode}}" modes=["view","tree","text","form"] json="{{configuration}}"></juicy-jsoneditor>
     </div>
@@ -45,10 +46,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           configuration: {
             type: Object,
             value: {source: 'test'},
-            notify: true
+            notify: true,
+            observer: '_updateModda'
           }
         },
+        showFull: function() {
+          app.displayJson(app.getRealConfiguration(this.component));
+        },
         _updateModda: function () {
+          if (this.loading) {
+            return;
+          }
           // Remove configuration panel
           while (this.$.configurationWidget.firstChild) {
             this.$.configurationWidget.removeChild(this.$.configurationWidget.firstChild);
@@ -58,8 +66,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.configuration = this.configuration || JSON.parse(JSON.stringify(this.modda.configuration.default));
             // Add configuration widget if exists
             this.moddaConfigurator = undefined;
-            if (this.modda.configuration.widget && this.modda.configuration.widget.url) {
+            if (this.modda.configuration && this.modda.configuration.widget && this.modda.configuration.widget.url) {
+              this.loading = true;
               Polymer.Base.importHref(this.modda.configuration.widget.url, (evt) => {
+                this.loading = false;
                 this.moddaConfigurator = window.document.createElement(this.modda.configuration.widget.tag, {configuration: {source: 'test'}});
                 this.mode = 'view';
                 if (this.moddaConfigurator) {

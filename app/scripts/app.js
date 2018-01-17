@@ -11,7 +11,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 var Webda = {
   services: {},
   workers: [],
-  deployers: {}
+  deployers: {},
+  models: []
 };
 (function(document) {
   'use strict';
@@ -37,6 +38,13 @@ var Webda = {
 
   app.getUrl = function(url) {
     return "http://localhost:18181/api" + url;
+  }
+
+  Webda.getModels = function() {
+    return Webda.models;
+  }
+  app.updateModels = function() {
+    Webda.models = app.models;
   }
 
   app.saveCurrentComponent = function () {
@@ -106,7 +114,6 @@ var Webda = {
         }
       });
       app.resolvedComponent = {parameters: app.getRealConfiguration(app.currentService)};
-      console.log(app.resolvedComponent);
     }
   });
 
@@ -203,6 +210,14 @@ var Webda = {
 
   Webda.getWorkers = function() {
     return JSON.parse(JSON.stringify(Webda.workers));
+  }
+
+  Webda.getModda = function(type) {
+    for (let i in app.moddas) {
+      if (app.moddas[i].uuid === type) {
+        return app.moddas[i];
+      }
+    }
   }
 
   app.mapServices = function(evt) {

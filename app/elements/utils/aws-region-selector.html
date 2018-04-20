@@ -29,23 +29,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'webda-s3-deployer',
-        properties: {
+    class AwsRegionSelector extends Polymer.Element {
+      static get is() {
+        return 'aws-region-selector';
+      }
+      static get properties() {
+        return {
           configuration: {
             type: Object
           }
-        },
-        isValid: function() {
-
-        },
-        ready: function() {
-          console.log('webda-s3-deployer is ready !');
-        }
-      });
-    })();
+        };
+      }
+      ready() {
+        super.ready();
+        console.log('webda-s3-deployer is ready !');
+      }
+    }
+    window.customElements.define(AwsRegionSelector.is, AwsRegionSelector);
   </script>
 </dom-module>

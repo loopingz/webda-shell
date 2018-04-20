@@ -34,7 +34,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         vertical-align: middle;
       }
       .method[checked] {
-        background-color: #999; 
+        background-color: #999;
       }
       .method_GET[checked] {
         background-color: #6492c0;
@@ -57,21 +57,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'url-method-badge',
-        toggle: function() {
-          if (this.toggles) {
-            this.checked = !this.checked;
-            this.fire('change', {method: this.method, 'checked': this.checked});
-          }
-        },
-        _setCheck: function() {
-          this.$.btn.checked = this.checked;
-        },
-        properties: {
+    class UrlMethodBadge extends Polymer.Element {
+      static get is() {
+        return 'url-method-badge';
+      }
+      static get properties() {
+        return {
           onToggle: {
             type: String,
           },
@@ -88,8 +79,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             type: String,
             notify: true
           }
+        };
+      }
+      toggle() {
+        if (this.toggles) {
+          this.checked = !this.checked;
+          this.fire('change', {method: this.method, 'checked': this.checked});
         }
-      });
-    })();
+      },
+      _setCheck() {
+        this.$.btn.checked = this.checked;
+      }
+    }
+    window.customElements.define(UrlMethodBadge.is, UrlMethodBadge);
   </script>
 </dom-module>

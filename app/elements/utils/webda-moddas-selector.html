@@ -56,12 +56,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'webda-moddas-selector',
-        properties: {
+    class WebdaModdasSelector extends Polymer.Element {
+      static get is() {
+        return 'webda-moddas-selector';
+      }
+      static get properties() {
+        return {
           moddas: {
             type: Array
           },
@@ -69,28 +69,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             type: Object,
             notify: true
           }
-        },
-        select: function (evt) {
-          // Should be a behavior now
-          var target = evt.target;
-          while (target !== undefined && target.localName !== 'paper-item') {
-            target = target.parentNode;
-          }
-          if (target !== undefined) {
-            this.selected = this.moddas[target.id];
-            if (this.old) {
-              this.old.removeAttribute("selected");
-            }
-            target.setAttribute("selected", true);
-            this.old = target;
-          }
-        },
-        isValid: function() {
-
-        },
-        ready: function() {
+        };
+      }
+      select (evt) {
+        // Should be a behavior now
+        var target = evt.target;
+        while (target !== undefined && target.localName !== 'paper-item') {
+          target = target.parentNode;
         }
-      });
-    })();
+        if (target !== undefined) {
+          this.selected = this.moddas[target.id];
+          if (this.old) {
+            this.old.removeAttribute("selected");
+          }
+          target.setAttribute("selected", true);
+          this.old = target;
+        }
+      }
+    }
+    window.customElements.define(WebdaModdasSelector.is, WebdaModdasSelector);
   </script>
 </dom-module>

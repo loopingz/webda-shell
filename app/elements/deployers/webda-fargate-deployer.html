@@ -52,12 +52,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'webda-fargate-deployer',
-        properties: {
+    class WebdaFargateDeployer extends Polymer.Element {
+      static get is() {
+        return 'webda-fargate-deployer';
+      }
+      static get properties() {
+        return {
           configuration: {
             type: Object,
             value: {
@@ -66,28 +66,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             notify: true,
             observer: '_update'
           }
-        },
-        getConfiguration: function() {
-          return this.configuration;
-        },
-        _update: function() {
-          if (!this.configuration.workers) {
-            this.set('configuration.workers', []);
-          }
-        },
-        validate: function() {
-          return true;
-        },
-        ready: function() {
-          let memoryOptions = [];
-          for (let i = 1; i < 31; i++) {
-            memoryOptions.push({value: (i * 1024).toString(), label: i + 'GB'});
-          }
-          this.memoryOptions = memoryOptions;
-          this.workers = Webda.workers;
+        };
+      }
+      ready() {
+        super.ready();
+        let memoryOptions = [];
+        for (let i = 1; i < 31; i++) {
+          memoryOptions.push({value: (i * 1024).toString(), label: i + 'GB'});
         }
-      });
-    })();
+        this.memoryOptions = memoryOptions;
+        this.workers = Webda.workers;
+      }
+      getConfiguration() {
+        return this.configuration;
+      }
+      _update() {
+        if (!this.configuration.workers) {
+          this.set('configuration.workers', []);
+        }
+      }
+      validate() {
+        return true;
+      }
+    }
+    window.customElements.define(WebdaFargateDeployer.is, WebdaFargateDeployer);
   </script>
 </dom-module>
-

@@ -42,38 +42,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'webda-lambda-deployer',
-        properties: {
+    class WebdaLambdaDeployer extends Polymer.Element {
+      static get is() {
+        return 'webda-lambda-deployer';
+      }
+      static get properties() {
+        return {
           configuration: {
             type: Object,
             value: {},
             notify: true
           }
-        },
-        _toLambdaName: function(name) {
-          name = name || '';
-          return name.replace(/[^a-zA-Z0-9_]/g, '-');
-        },
-        _toLambdaRole: function(fct, rest) {
-          fct = fct || this._toLambdaName(rest);
-          return fct + 'Role';
-        },
-        getConfiguration: function() {
-          return this.configuration;
-        },
-        setConfiguration: function(config) {
-          this.configuration = config;
-        },
-        validate: function() {
-          return this.configuration.source && this.configuration.target;
-        },
-        ready: function() {
-        }
-      });
-    })();
+        };
+      }
+      _toLambdaName(name) {
+        name = name || '';
+        return name.replace(/[^a-zA-Z0-9_]/g, '-');
+      }
+      _toLambdaRole(fct, rest) {
+        fct = fct || this._toLambdaName(rest);
+        return fct + 'Role';
+      }
+      getConfiguration() {
+        return this.configuration;
+      }
+      setConfiguration(config) {
+        this.configuration = config;
+      }
+      validate() {
+        return this.configuration.source && this.configuration.target;
+      }
+    }
+    window.customElements.define(WebdaLambdaDeployer.is, WebdaLambdaDeployer);
   </script>
 </dom-module>

@@ -122,33 +122,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <iron-ajax id="ajax" handle-as="json"></iron-ajax>
   </template>
   <script>
-    (function() {
-      'use strict';
-      Polymer({
-        is: 'new-service-dialog',
-        getName: function(uuid) {
-          return uuid.split('/').pop();
-        },
-        _updateName: function(name) {
-          if (!name) {
-            return;
-          }
-          this.set('service.require', './services/' + this.getName(name));
-        },
-        behaviors: [Polymer.PaperDialogBehavior],
-        properties: {
+    class NewServiceDialog extends Polymer.mixinBehaviors(Polymer.PaperDialogBehavior, Polymer.Element) {
+      static get is() {
+        return 'new-service-dialog';
+      }
+      static get properties() {
+        return {
           name: {
             type: String,
             observer: '_updateName'
           },
           moddas: {
             type: Array,
-            value: [{'label': 'Authentication', 'type': 'Authentication'},
-                    {'label': 'DynamoDB Storage', 'type': 'DynamoStore'},
-                    {'label': 'MongoDB Storage', 'type': 'MongoStore'},
-                    {'label': 'FileDB Storage', 'type': 'FileStore'},
-                    {'label': 'File Storage', 'type': 'FileBinary'},
-                    {'label': 'S3 Storage', 'type': 'S3Binary'}]
+            value: [
+              {'label': 'Authentication', 'type': 'Authentication'},
+              {'label': 'DynamoDB Storage', 'type': 'DynamoStore'},
+              {'label': 'MongoDB Storage', 'type': 'MongoStore'},
+              {'label': 'FileDB Storage', 'type': 'FileStore'},
+              {'label': 'File Storage', 'type': 'FileBinary'},
+              {'label': 'S3 Storage', 'type': 'S3Binary'}
+            ]
           },
           marketplaces: {},
           service: {
@@ -160,47 +153,58 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value: false,
             notify: true
           }
-        },
-        create: function () {
-          this.$.ajax.method = 'POST';
-          this.service = {};
-          if (this.section === 'Webda' && this.selected && this.selected.configuration.default) {
-            var defConf = this.selected.configuration.default;
-            for (var i in defConf) {
-              this.service[i]=defConf[i];
-            }
-            this.service.type = this.selected.uuid;
-          }
-          if (this.section === 'Custom') {
-            this.service.type = 'Custom';
-            this.service.require = this.require;
-          }
-          this.$.ajax.body = this.service;
-          this.$.ajax.url = app.getUrl('/services/' + this.name);
-          this.$.ajax.contentType = 'application/json';
-          this.$.ajax.generateRequest().completes.then( () => {
-            this._updateClosingReasonConfirmed(true);
-            this.close();
-            this.service = {};
-            this.old.removeAttribute("selected");
-            this.old =  undefined;
-          }, (err) => {
-            if (err.message.endsWith("409")) {
-              this.error = 'This name is already used'
-            } else {
-              this.error = err.message;
-            }
-          });
-        },
-        toggleEdit: function() {
-          this.editMode = !this.editMode;
-        },
-        ready: function() {
-          this.node = this;
-          this.section = "Webda";
-          this.code = "module.exports = function(executor) { \n\texecutor.getStore('myStore').get('uuid').then( (object) => {\n\t\texecutor.write(object);\n\t}).catch ( (err) => {\n\t\texecutor.writeHead(500);\n\t\texecutor.write('Error occurs on sample method');\n\t});\n};";
+        };
+      }
+      ready() {
+        super.ready();
+        this.node = this;
+        this.section = "Webda";
+        this.code = "module.exports = function(executor) { \n\texecutor.getStore('myStore').get('uuid').then( (object) => {\n\t\texecutor.write(object);\n\t}).catch ( (err) => {\n\t\texecutor.writeHead(500);\n\t\texecutor.write('Error occurs on sample method');\n\t});\n};";
+      }
+      getName(uuid) {
+        return uuid.split('/').pop();
+      }
+      _updateName(name) {
+        if (!name) {
+          return;
         }
-      });
-    })();
+        this.set('service.require', './services/' + this.getName(name));
+      }
+      create() {
+        this.$.ajax.method = 'POST';
+        this.service = {};
+        if (this.section === 'Webda' && this.selected && this.selected.configuration.default) {
+          var defConf = this.selected.configuration.default;
+          for (var i in defConf) {
+            this.service[i]=defConf[i];
+          }
+          this.service.type = this.selected.uuid;
+        }
+        if (this.section === 'Custom') {
+          this.service.type = 'Custom';
+          this.service.require = this.require;
+        }
+        this.$.ajax.body = this.service;
+        this.$.ajax.url = app.getUrl('/services/' + this.name);
+        this.$.ajax.contentType = 'application/json';
+        this.$.ajax.generateRequest().completes.then( () => {
+          this._updateClosingReasonConfirmed(true);
+          this.close();
+          this.service = {};
+          this.old.removeAttribute("selected");
+          this.old =  undefined;
+        }, (err) => {
+          if (err.message.endsWith("409")) {
+            this.error = 'This name is already used'
+          } else {
+            this.error = err.message;
+          }
+        });
+      }
+      toggleEdit() {
+        this.editMode = !this.editMode;
+      }
+    }
+    window.customElements.define(NewServiceDialog.is, NewServiceDialog);
   </script>
 </dom-module>

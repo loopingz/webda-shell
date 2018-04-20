@@ -25,96 +25,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'service-panel',
-        updateParams: function() {
-          if (!this.component) return;
-          // Not optimal
-          var newService = {};
-          for (let i in this.params) {
-            newService[i] = this.params[i];
-            this.component[i] = this.params[i];
-          }
-          for (let i in this.component) {
-            if (i === "require" || i === "type") {
-              continue;
-            }
-            if (i.startsWith('_')) continue;
-            if (newService[i] === undefined) {
-              delete this.component[i];
-            }
-          }
-          this.validate();
-        },
-        validate: function() {
-          if (!this.component) return;
-          if (this.component._type !== "Service") return;
-          var type = this.component.type;
-          if (type === undefined) {
-            type = this.component._name;
-          }
-          if (type.indexOf('/') == -1) {
-            type = "Webda/" + type;
-          }
-          if (app.hasSchema(type)) {
-            this.toggleClass('unknown', false, this.$.params);
-            if (app.ajv.validate(type, app.getRealConfiguration(this.component))) {
-              this.errors = undefined;
-              this.toggleClass('invalid', false, this.$.params);
-            } else {
-              this.errors = 'Configuration' + app.ajv.errorsText().substr(4);
-              this.toggleClass('invalid', true, this.$.params);
-            }
-          } else {
-              this.toggleClass('unknown', true, this.$.params);
-              this.toggleClass('invalid', false, this.$.params);
-              this.errors = undefined;
-          }
-        },
-        filterComponent: function () {
-          if (!this.component || !this.component.type) return;
-          // Should check the components
-          let type = this.component.type || 'Unknown';
-          if (type.indexOf('/') < 0) {
-            type = 'Webda/' + type;
-          }
-          this.modda = Webda.getModda(type);
-          // As configuration is include in the definition need to filter _type and _name
-          let params = {};
-          this.type = undefined;
-          for (let i in this.component) {
-            if (i.startsWith('_')) {
-              continue;
-            }
-            if (i === 'callback') {
-              continue;
-            }
-            if (i == "type") {
-              this.type = this.component[i];
-              continue;
-            }
-            if (i == "require") {
-              this.type = "Custom";
-              continue;
-            }
-            params[i] = this.component[i];
-          }
-          if (this.type === undefined && this.component) {
-            this.type = this.component._name;
-          }
-          this.set('params',params);
-          this.validate()
-        },
-        ready: function() {
-          this.addEventListener('configuration-updated', (evt) => {
-            this.params = evt.detail.value;
-            this.updateParams();
-          });
-        },
-        properties: {
+    class ServicePanel extends Polymer.Element {
+      static get is() {
+        return 'service-panel';
+      }
+      static get properties() {
+        return {
           params: {
             type: Object,
             observer: 'updateParams'
@@ -142,8 +58,94 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             notify: true,
             observer: 'filterComponent'
           }
+        };
+      }
+      ready() {
+        super.ready();
+        this.addEventListener('configuration-updated', (evt) => {
+          this.params = evt.detail.value;
+          this.updateParams();
+        });
+      }
+      updateParams() {
+        if (!this.component) return;
+        // Not optimal
+        var newService = {};
+        for (let i in this.params) {
+          newService[i] = this.params[i];
+          this.component[i] = this.params[i];
         }
-      });
-    })();
+        for (let i in this.component) {
+          if (i === "require" || i === "type") {
+            continue;
+          }
+          if (i.startsWith('_')) continue;
+          if (newService[i] === undefined) {
+            delete this.component[i];
+          }
+        }
+        this.validate();
+      }
+      validate() {
+        if (!this.component) return;
+        if (this.component._type !== "Service") return;
+        var type = this.component.type;
+        if (type === undefined) {
+          type = this.component._name;
+        }
+        if (type.indexOf('/') == -1) {
+          type = "Webda/" + type;
+        }
+        if (app.hasSchema(type)) {
+          this.toggleClass('unknown', false, this.$.params);
+          if (app.ajv.validate(type, app.getRealConfiguration(this.component))) {
+            this.errors = undefined;
+            this.toggleClass('invalid', false, this.$.params);
+          } else {
+            this.errors = 'Configuration' + app.ajv.errorsText().substr(4);
+            this.toggleClass('invalid', true, this.$.params);
+          }
+        } else {
+            this.toggleClass('unknown', true, this.$.params);
+            this.toggleClass('invalid', false, this.$.params);
+            this.errors = undefined;
+        }
+      }
+      filterComponent() {
+        if (!this.component || !this.component.type) return;
+        // Should check the components
+        let type = this.component.type || 'Unknown';
+        if (type.indexOf('/') < 0) {
+          type = 'Webda/' + type;
+        }
+        this.modda = Webda.getModda(type);
+        // As configuration is include in the definition need to filter _type and _name
+        let params = {};
+        this.type = undefined;
+        for (let i in this.component) {
+          if (i.startsWith('_')) {
+            continue;
+          }
+          if (i === 'callback') {
+            continue;
+          }
+          if (i == "type") {
+            this.type = this.component[i];
+            continue;
+          }
+          if (i == "require") {
+            this.type = "Custom";
+            continue;
+          }
+          params[i] = this.component[i];
+        }
+        if (this.type === undefined && this.component) {
+          this.type = this.component._name;
+        }
+        this.set('params',params);
+        this.validate()
+      }
+    }
+    window.customElements.define(ServicePanel.is, ServicePanel);
   </script>
 </dom-module>

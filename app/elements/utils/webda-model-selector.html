@@ -28,12 +28,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'webda-model-selector',
-        properties: {
+    class WebdaModelSelector extends Polymer.Element {
+      static get is() {
+        return 'webda-model-selector';
+      }
+      static get properties() {
+        return {
           label: {
             type: String,
             value: 'Model'
@@ -45,20 +45,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           workers: {
             type: Array
           }
-        },
-        _update: function() {
-          if (this.selected) {
-            this.item = this.selected._name;
-          } else {
-            this.item = '';
-          }
-        },
-        ready: function() {
-          if (!this.models) {
-            this.models = Webda.getModels();
-          }
+        };
+      }
+      ready() {
+        super.ready();
+        if (!this.models) {
+          this.models = Webda.getModels();
         }
-      });
-    })();
+      }
+      _update() {
+        if (this.selected) {
+          this.item = this.selected._name;
+        } else {
+          this.item = '';
+        }
+      }
+    }
+    window.customElements.define(WebdaModelSelector.is, WebdaModelSelector);
   </script>
 </dom-module>

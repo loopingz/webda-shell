@@ -44,30 +44,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'webda-s3-deployer',
-        properties: {
+    class WebdaS3Deployer extends Polymer.Element {
+      static get is() {
+        return 'webda-s3-deployer';
+      }
+      static get properties() {
+        return {
           configuration: {
             type: Object,
             value: {},
             notify: true
           }
-        },
-        getConfiguration: function() {
-          return this.configuration;
-        },
-        setConfiguration: function(config) {
-          this.configuration = config;
-        },
-        validate: function() {
-          return this.configuration.source && this.configuration.target;
-        },
-        ready: function() {
-        }
-      });
-    })();
+        };
+      }
+      getConfiguration() {
+        return this.configuration;
+      }
+      setConfiguration(config) {
+        this.configuration = config;
+      }
+      validate() {
+        return this.configuration.source && this.configuration.target;
+      }
+    }
+    window.customElements.define(WebdaS3Deployer.is, WebdaS3Deployer);
   </script>
 </dom-module>

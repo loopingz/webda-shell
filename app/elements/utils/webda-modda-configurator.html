@@ -33,12 +33,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'webda-modda-configurator',
-        properties: {
+    class WebdaModdaConfigurator extends Polymer.Element {
+      static get is() {
+        return 'webda-modda-configurator';
+      }
+      static get properties() {
+        return {
           modda: {
             type: Object,
             observer: '_updateModda'
@@ -48,46 +48,45 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value: {source: 'test'},
             notify: true
           }
-        },
-        showFull: function() {
-          app.displayJson(app.getRealConfiguration(this.component));
-        },
-        _updateModda: function () {
-          if (this.loading) {
-            return;
-          }
-          // Remove configuration panel
-          while (this.$.configurationWidget.firstChild) {
-            this.$.configurationWidget.removeChild(this.$.configurationWidget.firstChild);
-          }
-          // Add modda
-          if (this.modda) {
-            this.configuration = this.configuration || JSON.parse(JSON.stringify(this.modda.configuration.default));
-            // Add configuration widget if exists
-            this.moddaConfigurator = undefined;
-            if (this.modda.configuration && this.modda.configuration.widget && this.modda.configuration.widget.url) {
-              this.loading = true;
-              Polymer.Base.importHref(this.modda.configuration.widget.url, (evt) => {
-                this.loading = false;
-                this.moddaConfigurator = window.document.createElement(this.modda.configuration.widget.tag, {configuration: {source: 'test'}});
-                this.mode = 'view';
-                if (this.moddaConfigurator) {
-                  this.moddaConfigurator.configuration = this.configuration;
-                  this.moddaConfigurator.addEventListener('configuration-changed', (evt) => {
-                    this.set('configuration', this.moddaConfigurator.configuration);
-                    this.dispatchEvent(new CustomEvent('configuration-updated', { detail: {'value': this.moddaConfigurator.configuration}, bubbles: true, composed: true }));
-                  });
-                  Polymer.dom(this.$.configurationWidget).appendChild(this.moddaConfigurator);
-                }
-              });
-            } else {
-              this.mode = 'tree';
-            }
-          }
-        },
-        ready: function() {
+        };
+      }
+      showFull() {
+        app.displayJson(app.getRealConfiguration(this.component));
+      }
+      _updateModda () {
+        if (this.loading) {
+          return;
         }
-      });
-    })();
+        // Remove configuration panel
+        while (this.$.configurationWidget.firstChild) {
+          this.$.configurationWidget.removeChild(this.$.configurationWidget.firstChild);
+        }
+        // Add modda
+        if (this.modda) {
+          this.configuration = this.configuration || JSON.parse(JSON.stringify(this.modda.configuration.default));
+          // Add configuration widget if exists
+          this.moddaConfigurator = undefined;
+          if (this.modda.configuration && this.modda.configuration.widget && this.modda.configuration.widget.url) {
+            this.loading = true;
+            Polymer.Base.importHref(this.modda.configuration.widget.url, (evt) => {
+              this.loading = false;
+              this.moddaConfigurator = window.document.createElement(this.modda.configuration.widget.tag, {configuration: {source: 'test'}});
+              this.mode = 'view';
+              if (this.moddaConfigurator) {
+                this.moddaConfigurator.configuration = this.configuration;
+                this.moddaConfigurator.addEventListener('configuration-changed', (evt) => {
+                  this.set('configuration', this.moddaConfigurator.configuration);
+                  this.dispatchEvent(new CustomEvent('configuration-updated', { detail: {'value': this.moddaConfigurator.configuration}, bubbles: true, composed: true }));
+                });
+                Polymer.dom(this.$.configurationWidget).appendChild(this.moddaConfigurator);
+              }
+            });
+          } else {
+            this.mode = 'tree';
+          }
+        }
+      }
+    }
+    window.customElements.define(WebdaModdaConfigurator.is, WebdaModdaConfigurator);
   </script>
 </dom-module>

@@ -26,22 +26,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-      Polymer({
-        is: 'model-panel',
-        updateValues: function() {
-          console.log('should update values');
-        },
-        init: function() {
-
-        },
-        ready: function() {
-          this.addEventListener("change", (evt) => {
-            this.dirty = true;
-          });
-        },
-        properties: {
+    class ModelPanel extends Polymer.Element {
+      static get is() {
+        return 'model-panel';
+      }
+      static get properties() {
+        return {
           dirty: {
             type: Boolean,
             value: false,
@@ -52,8 +42,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             notify: true,
             observer: 'init'
           }
-        }
-      });
-    })();
+        };
+      }
+      ready() {
+        super.ready();
+        this.addEventListener("change", (evt) => {
+          this.dirty = true;
+        });
+      }
+      updateValues() {
+        console.log('should update values');
+      }
+    }
+    window.customElements.define(ModelPanel.is, ModelPanel);
   </script>
 </dom-module>

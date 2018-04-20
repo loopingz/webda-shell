@@ -57,19 +57,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
+    class ConfiguratorItem extends Polymer.Element {
+      static get is() {
+        return 'configuration-item';
+      }
+      static get properties() {
+        return {
 
-      Polymer({
-        is: 'configuration-item',
-
-        isSelected: function(data, select) {
-          if (data === select) {
-            return true;
-          }
-          return false;
+        };
+      }
+      isSelected(data, select) {
+        if (data === select) {
+          return true;
         }
-      });
-    })();
+        return false;
+      }
+    }
+    window.customElements.define(ConfiguratorItem.is, ConfiguratorItem);
   </script>
 </dom-module>

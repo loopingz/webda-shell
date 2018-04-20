@@ -64,32 +64,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'url-route',
-
-        isSelected: function(data, select) {
-          if (data === select) {
-            return true;
-          }
-          return false;
-        },
-        updateValues: function () {
-          this.selected = this.dataIndex === this.selectedIndex;
-          if (typeof(this.url.method) === "string") {
-            this.methods = [this.url.method];
-          } else {
-            this.methods = this.url.method;
-          }
-          if (!this.url["_manual"]) {
-            this._service = "service";
-          } else {
-            this._service = "";
-          }
-        },
-        properties: {
+    class UrlRoute extends Polymer.Element {
+      static get is() {
+        return 'url-route';
+      }
+      static get properties() {
+        return {
           methods: {
             type: Array,
             value: ["GET"]
@@ -99,8 +79,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             notify: true,
             observer: 'updateValues'
           }
+        };
+      }
+      isSelected(data, select) {
+        if (data === select) {
+          return true;
         }
-      });
-    })();
+        return false;
+      }
+      updateValues() {
+        this.selected = this.dataIndex === this.selectedIndex;
+        if (typeof(this.url.method) === "string") {
+          this.methods = [this.url.method];
+        } else {
+          this.methods = this.url.method;
+        }
+        if (!this.url["_manual"]) {
+          this._service = "service";
+        } else {
+          this._service = "";
+        }
+      }
+    }
+    window.customElements.define(UrlRoute.is, UrlRoute);
   </script>
 </dom-module>

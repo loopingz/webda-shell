@@ -21,17 +21,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'configuration-panel',
-        _toggleReadonly: function() {
-          this.toggleClass('readonly', true, this.$.params);
-          this._setModes(['view']);
-          this.mode = 'view';
-        },
-        properties: {
+    class ConfiguratorPanel extends Polymer.Element {
+      static get is() {
+        return 'configuration-panel';
+      }
+      static get properties() {
+        return {
           mode: {
             type: String,
             value: 'tree',
@@ -59,8 +54,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             type: Object,
             notify: true
           }
-        }
-      });
-    })();
+        };
+      }
+      _toggleReadonly() {
+        this.toggleClass('readonly', true, this.$.params);
+        this._setModes(['view']);
+        this.mode = 'view';
+      }
+    }
+    window.customElements.define(ConfiguratorPanel.is, ConfiguratorPanel);
   </script>
 </dom-module>

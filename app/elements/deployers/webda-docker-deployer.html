@@ -28,31 +28,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'webda-docker-deployer',
-        properties: {
+    class WebdaDockerDeployer extends Polymer.Element {
+      static get is() {
+        return 'webda-docker-deployer';
+      }
+      static get properties() {
+        return {
           configuration: {
             type: Object,
             value: {},
             notify: true,
             observer: '_update'
           }
-        },
-        _update: function() {
-          if (!this.configuration.worker) {
-            this.set('configuration.worker', '');
-          }
-        },
-        validate: function() {
-          return this.configuration.tag && this.configuration.worker;
-        },
-        ready: function() {
-
+        };
+      }
+      _update() {
+        if (!this.configuration.worker) {
+          this.set('configuration.worker', '');
         }
-      });
-    })();
+      }
+      validate() {
+        return this.configuration.tag && this.configuration.worker;
+      }
+    }
+    window.customElements.define(WebdaDockerDeployer.is, WebdaDockerDeployer);
   </script>
 </dom-module>

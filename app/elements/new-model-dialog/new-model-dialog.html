@@ -96,18 +96,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <iron-ajax id="ajax" handle-as="json"></iron-ajax>
   </template>
   <script>
-    (function() {
-      'use strict';
-      Polymer({
-        is: 'new-model-dialog',
-        getName: function(uuid) {
-          if (uuid.indexOf('/') >= 0) {
-            return uuid.substr(uuid.indexOf('/')+1);
-          }
-          return uuid;
-        },
-        behaviors: [Polymer.PaperDialogBehavior],
-        properties: {
+    class NewModelDialog extends Polymer.mixinBehaviors(Polymer.PaperDialogBehavior, Polymer.Element) {
+      static get is() {
+        return 'new-model-dialog';
+      }
+      static get properties() {
+        return {
           models: {
             type: Array
           },
@@ -131,49 +125,57 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value: false,
             notify: true
           }
-        },
-        _updateName: function() {
-          if (!this.name) {
-            return;
-          }
-          let source = this.name.split('/').pop();
-          if (source === '') {
-            return;
-          }
-          this.src = './models/' + source.toLowerCase();
-        },
-        create: function () {
-          this.$.ajax.method = 'POST';
-          this.model = {};
-          this.model.name = this.name;
-          this.model.src = this.src;
-          this.model.templating = this.templating;
-          this.model.extending = this.extending;
-          this.$.ajax.body = this.model;
-          this.$.ajax.url = app.getUrl('/models');
-          this.$.ajax.contentType = 'application/json';
-          this.$.ajax.generateRequest().completes.then( () => {
-            this._updateClosingReasonConfirmed(true);
-            this.close(); 
-            this.src = this.name = '';
-            this.extending = 'Webda/CoreModel';
-            this.old.removeAttribute("selected");
-            this.old =  undefined;
-          }, (err) => {
-            if (err.message.endsWith("409")) {
-              this.error = 'This name is already used'
-            } else {
-              this.error = err.message;
-            }
-          });
-        },
-        toggleEdit: function() {
-          this.editMode = !this.editMode;
-        },
-        ready: function() {
-          this.node = this;
+        };
+      }
+      ready() {
+        super.ready();
+        this.node = this;
+      }
+      getName(uuid) {
+        if (uuid.indexOf('/') >= 0) {
+          return uuid.substr(uuid.indexOf('/')+1);
         }
-      });
-    })();
+        return uuid;
+      }
+      _updateName() {
+        if (!this.name) {
+          return;
+        }
+        let source = this.name.split('/').pop();
+        if (source === '') {
+          return;
+        }
+        this.src = './models/' + source.toLowerCase();
+      }
+      create() {
+        this.$.ajax.method = 'POST';
+        this.model = {};
+        this.model.name = this.name;
+        this.model.src = this.src;
+        this.model.templating = this.templating;
+        this.model.extending = this.extending;
+        this.$.ajax.body = this.model;
+        this.$.ajax.url = app.getUrl('/models');
+        this.$.ajax.contentType = 'application/json';
+        this.$.ajax.generateRequest().completes.then( () => {
+          this._updateClosingReasonConfirmed(true);
+          this.close();
+          this.src = this.name = '';
+          this.extending = 'Webda/CoreModel';
+          this.old.removeAttribute("selected");
+          this.old =  undefined;
+        }, (err) => {
+          if (err.message.endsWith("409")) {
+            this.error = 'This name is already used'
+          } else {
+            this.error = err.message;
+          }
+        });
+      },
+      toggleEdit() {
+        this.editMode = !this.editMode;
+      }
+    }
+    window.customElements.define(NewModelDialog.is, NewModelDialog);
   </script>
 </dom-module>

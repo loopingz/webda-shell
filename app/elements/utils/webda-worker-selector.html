@@ -28,12 +28,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'webda-worker-selector',
-        properties: {
+    class WebdaWorkerSelector extends Polymer.Element {
+      static get is() {
+        return 'webda-worker-selector';
+      }
+      static get properties() {
+        return {
           label: {
             type: String,
             value: 'Worker'
@@ -53,23 +53,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           workers: {
             type: Array
           }
-        },
-        _update: function() {
-          if (this.selected) {
-            this.item = this.selected._name;
-          } else {
-            this.item = '';
-          }
-        },
-        ready: function() {
-          if (!this.workers) {
-            this.workers = Webda.getWorkers();
-          }
-          if (this.includeApi) {
-            this.push('workers', {_name: 'API'});
-          }
+        };
+      }
+      ready() {
+        super.ready();
+        if (!this.workers) {
+          this.workers = Webda.getWorkers();
         }
-      });
-    })();
+        if (this.includeApi) {
+          this.push('workers', {_name: 'API'});
+        }
+      }
+      _update() {
+        if (this.selected) {
+          this.item = this.selected._name;
+        } else {
+          this.item = '';
+        }
+      }
+    }
+    window.customElements.define(WebdaWorkerSelector.is, WebdaWorkerSelector);
   </script>
 </dom-module>

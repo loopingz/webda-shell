@@ -14,10 +14,11 @@
     "ajv": "~4.0.0"
   },
   "devDependencies": {
-    "web-component-tester": "^4.0.0"
+    "web-component-tester": "^6.0.0"
   },
   "ignore": [],
   "resolutions": {
-    "polymer": "^1.1.0"
+    "polymer": "^2.0.0",
+    "webcomponentsjs": "^v1.0.2"
   }
 }

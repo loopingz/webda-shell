@@ -122,55 +122,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'deployment-panel',
-        ready: function() {
-          this.$.newDeploymentDialog.addEventListener('add-deployment-unit', (evt) => {
-            this.push('component.units', evt.detail);
-            this.dispatchEvent(new CustomEvent('webda-save-current-component', {bubbles: true, composed: true }));
-            this.activeUnit = evt.detail;
-          });
-        },
-        _selectUnit: function(evt) {
-          this.activeUnit = evt.target.unit;
-          this.hasActiveUnit = this.activeUnit !== undefined;
-          this.activeUnitDeployer = undefined;
-          if (!this.hasActiveUnit) {
-            return;
-          }
-          // Search for the deployers
-          this.deployers.forEach( (deployer) => {
-            if (this.activeUnit.type !== deployer.uuid) return;
-            this.activeUnitDeployer = deployer;
-          });
-        },
-        _addUnit: function() {
-          this.$.newDeploymentDialog.open();
-        },
-        setActive: function() {
-          if (this.active) {
-            app.currentDeployment = this.component;
-          } else {
-            app.currentDeployment = undefined;
-          }
-        },
-        _updateActive: function() {
-          this.active = (app.currentDeployment && this.component && app.currentDeployment._name == this.component._name);
-          if (!this.component) return;
-          if (this.component._type !== 'deployment') return;
-          this.services.forEach( (service) => {
-            this.component.services[service._name] = this.component.services[service._name] || {};
-          });
-          this.activeUnit = undefined;
-          this.hasActiveUnit = false;
-        },
-        _updateUnit: function() {
-          console.log(this.activeUnit);
-        },
-        properties: {
+    class DeploymentPanel extends Polymer.Element {
+      static get is() {
+        return 'deployment-panel';
+      }
+      static get properties() {
+        return {
           subroute: {
             type: String,
             value: 'configuration'
@@ -203,8 +160,53 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             notify: true,
             observer: '_updateActive'
           }
+        };
+      }
+      ready() {
+        super.ready();
+        this.$.newDeploymentDialog.addEventListener('add-deployment-unit', (evt) => {
+          this.push('component.units', evt.detail);
+          this.dispatchEvent(new CustomEvent('webda-save-current-component', {bubbles: true, composed: true }));
+          this.activeUnit = evt.detail;
+        });
+      }
+      _selectUnit(evt) {
+        this.activeUnit = evt.target.unit;
+        this.hasActiveUnit = this.activeUnit !== undefined;
+        this.activeUnitDeployer = undefined;
+        if (!this.hasActiveUnit) {
+          return;
         }
-      });
-    })();
+        // Search for the deployers
+        this.deployers.forEach( (deployer) => {
+          if (this.activeUnit.type !== deployer.uuid) return;
+          this.activeUnitDeployer = deployer;
+        });
+      }
+      _addUnit() {
+        this.$.newDeploymentDialog.open();
+      }
+      setActive() {
+        if (this.active) {
+          app.currentDeployment = this.component;
+        } else {
+          app.currentDeployment = undefined;
+        }
+      }
+      _updateActive() {
+        this.active = (app.currentDeployment && this.component && app.currentDeployment._name == this.component._name);
+        if (!this.component) return;
+        if (this.component._type !== 'deployment') return;
+        this.services.forEach( (service) => {
+          this.component.services[service._name] = this.component.services[service._name] || {};
+        });
+        this.activeUnit = undefined;
+        this.hasActiveUnit = false;
+      }
+      _updateUnit() {
+        console.log(this.activeUnit);
+      }
+    }
+    window.customElements.define(DeploymentPanel.is, DeploymentPanel);
   </script>
 </dom-module>

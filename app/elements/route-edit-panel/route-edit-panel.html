@@ -44,19 +44,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-      Polymer({
-        is: 'route-edit-panel',
-        updateValues: function() {
-          if (!this.route) return;
-          var juicy = this.$$("#editor");
-          if (juicy && juicy.editor) {
-            this.route.callback = juicy.editor.getValue();
-            this.fire('change');
-          }
-        },
-        properties: {
+    class RouteEditPanel extends Polymer.Element {
+      static get is() {
+        return 'route-edit-panel';
+      }
+      static get properties() {
+        return {
           dirty: {
             type: Boolean,
             value: false
@@ -66,8 +59,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             notify: true,
             observer: 'updateValues'
           }
+        };
+      }
+      updateValues() {
+        if (!this.route) return;
+        var juicy = this.$$("#editor");
+        if (juicy && juicy.editor) {
+          this.route.callback = juicy.editor.getValue();
+          this.fire('change');
         }
-      });
-    })();
+      }
+    }
+    window.customElements.define(RouteEditPanel.is, RouteEditPanel);
   </script>
 </dom-module>

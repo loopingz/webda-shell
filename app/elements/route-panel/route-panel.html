@@ -32,24 +32,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-      var helpers = {'inline': 'Inline', 'lambda': 'Lambda', 'file': 'File', 'string': 'String'};
-      Polymer({
-        is: 'route-panel',
-        init: function() {
-          if (!this.component) return;
-          this.helper = helpers[this.component.executor];
-          // Copy the component as we dont want to edit it globally
-          this.hasParams = this.component.executor != "string";
-          this.dirty = false;
-        },
-        ready: function() {
-          this.addEventListener("change", (evt) => {
-            this.dirty = true;
-          });
-        },
-        properties: {
+    class RoutePanel extends Polymer.Element {
+      static get is() {
+        return 'route-panel';
+      }
+      static get properties() {
+        return {
           mode: {
             type: String,
             value: 'tree',
@@ -67,9 +55,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             type: Object,
             notify: true,
             observer: 'init'
+          },
+          helper: {
+            type: Array,
+            value: {'inline': 'Inline', 'lambda': 'Lambda', 'file': 'File', 'string': 'String'}
           }
-        }
-      });
-    })();
+        };
+      }
+      ready() {
+        super.ready();
+        this.addEventListener("change", (evt) => {
+          this.dirty = true;
+        });
+      }
+      init() {
+        if (!this.component) return;
+        this.helper = helpers[this.component.executor];
+        // Copy the component as we dont want to edit it globally
+        this.hasParams = this.component.executor != "string";
+        this.dirty = false;
+      }
+    }
+    window.customElements.define(RoutePanel.is, RoutePanel);
   </script>
 </dom-module>

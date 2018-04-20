@@ -27,12 +27,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'webda-store-configurator',
-        properties: {
+    class WebdaStoreConfigurator extends Polymer.Element {
+      static get is() {
+        return 'webda-store-configurator';
+      }
+      static get properties() {
+        return {
           configuration: {
             type: Object,
             value: {},
@@ -44,73 +44,72 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value: [],
             observer: '_exposeUpdate'
           }
-        },
-        _exposeUpdate: function() {
-          var count = 0;
-          let restrict = {};
-          this.configuration.expose = {};
-          if (this.methods.indexOf('GET')<0) {
-            restrict.get = true;
-            count++;
-          }
-          if (this.methods.indexOf('POST')<0) {
-            restrict.create = true;
-            count++;
-          }
-          if (this.methods.indexOf('PUT')<0) {
-            restrict.update = true;
-            count++;
-          }
-          if (this.methods.indexOf('DELETE')<0) {
-            restrict.delete = true;
-            count++;
-          }
-          if (count === 0) {
-            this.set('configuration.expose.restrict');
-          } else {
-            if (!this.configuration.expose || typeof(this.configuration.expose) === 'object') {
-              this.set('configuration.expose.restrict', restrict);
-            } else {
-              this.set('configuration.expose', {restrict: restrict});
-            }
-          }
-        },
-        getConfiguration: function() {
-          return this.configuration;
-        },
-        updateConfiguration: function() {
-          let methods = []
-          if (this.configuration.expose) {
-            if (!this.configuration.expose.restrict) {
-              methods.push('GET');
-              methods.push('POST');
-              methods.push('PUT');
-              methods.push('DELETE');
-            } else {
-              if (!this.configuration.expose.restrict.create) {
-                methods.push('POST');
-              }
-              if (!this.configuration.expose.restrict.delete) {
-                methods.push('DELETE');
-              }
-              if (!this.configuration.expose.restrict.update) {
-                methods.push('PUT');
-              }
-              if (!this.configuration.expose.restrict.get) {
-                methods.push('GET');
-              }
-            }
-          } else {
-            this.configuration.expose = {};
-          }
-          this.methods = methods;
-        },
-        validate: function() {
-          return this.configuration.source && this.configuration.target;
-        },
-        ready: function() {
+        };
+      }
+      _exposeUpdate() {
+        var count = 0;
+        let restrict = {};
+        this.configuration.expose = {};
+        if (this.methods.indexOf('GET')<0) {
+          restrict.get = true;
+          count++;
         }
-      });
-    })();
+        if (this.methods.indexOf('POST')<0) {
+          restrict.create = true;
+          count++;
+        }
+        if (this.methods.indexOf('PUT')<0) {
+          restrict.update = true;
+          count++;
+        }
+        if (this.methods.indexOf('DELETE')<0) {
+          restrict.delete = true;
+          count++;
+        }
+        if (count === 0) {
+          this.set('configuration.expose.restrict');
+        } else {
+          if (!this.configuration.expose || typeof(this.configuration.expose) === 'object') {
+            this.set('configuration.expose.restrict', restrict);
+          } else {
+            this.set('configuration.expose', {restrict: restrict});
+          }
+        }
+      }
+      getConfiguration() {
+        return this.configuration;
+      }
+      updateConfiguration() {
+        let methods = []
+        if (this.configuration.expose) {
+          if (!this.configuration.expose.restrict) {
+            methods.push('GET');
+            methods.push('POST');
+            methods.push('PUT');
+            methods.push('DELETE');
+          } else {
+            if (!this.configuration.expose.restrict.create) {
+              methods.push('POST');
+            }
+            if (!this.configuration.expose.restrict.delete) {
+              methods.push('DELETE');
+            }
+            if (!this.configuration.expose.restrict.update) {
+              methods.push('PUT');
+            }
+            if (!this.configuration.expose.restrict.get) {
+              methods.push('GET');
+            }
+          }
+        } else {
+          this.configuration.expose = {};
+        }
+        this.methods = methods;
+      }
+      validate() {
+        return this.configuration.source && this.configuration.target;
+      }
+    }
+    window.customElements.define(WebdaStoreConfigurator.is, WebdaStoreConfigurator);
   </script>
 </dom-module>

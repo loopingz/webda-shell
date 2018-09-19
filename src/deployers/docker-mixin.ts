@@ -87,9 +87,34 @@ function DockerMixIn < T extends Constructor < Deployer >> (Base: T) {
     }
 
 
+    getDockerfileWebdaShell() {
+      let dockerfile = '';
+      var shellPackageInfo = require(__dirname + '/../../package.json');
+      // Get git rev
+      let tag = '';
+      if (shellPackageInfo.version === tag) {
+        return `RUN yarn install webda-shell@${tag}`;
+      } else {
+        // Copy webda-shell into build directory
+        let includes = shellPackageInfo.files || ['lib'];
+        includes.forEach((path) => {
+          let fullpath = __dirname + '/../../' + path;
+          if (fs.lstatSync(fullpath).isDirectory()) {
+            path += '/';
+            dockerfile += `RUN mkdir -p /webda/node_modules/webda-shell/${path}\n`;
+          } else if (path.indexOf('/')) {
+            let basedir = path.substring(0, path.lastIndexOf('/') + 1);
+            dockerfile += `RUN mkdir -p /webda/node_modules/webda-shell/${basedir}\n`;
+          }
+          dockerfile += `ADD ${fullpath} /webda/node_modules/webda-shell/${path}\n`;
+        });
+        dockerfile += `RUN ln -s ../webda-shell/bin/webda /webda/node_modules/.bin\n`;
+      }
+      return dockerfile;
+    }
+
     getDockerfile(command, logfile = undefined) {
       var cwd = process.cwd();
-      var version = require(__dirname + '/../../package.json').version;
       var packageInfo = require(cwd + '/package.json');
       var dockerfile = `
   FROM node:latest
@@ -99,8 +124,10 @@ function DockerMixIn < T extends Constructor < Deployer >> (Base: T) {
   RUN mkdir -p /webda/deployments
   ADD package.json /webda/
   WORKDIR /webda
-  RUN yarn install && yarn add webda-shell@`;
-      dockerfile += version + '\n';
+  RUN yarn install
+  `;
+      dockerfile += this.getDockerfileWebdaShell();
+      // Import webda-shell
       if (!command) {
         command = 'serve';
       }
@@ -112,7 +139,6 @@ function DockerMixIn < T extends Constructor < Deployer >> (Base: T) {
       dockerfile += 'ADD webda.config.json /webda/\n';
       dockerfile += 'COPY deployments /webda/deployments/\n';
       let includes = packageInfo.files || ['lib'];
-      console.log(includes);
       includes.forEach((path) => {
         if (fs.lstatSync(cwd + '/' + path).isDirectory()) {
           path += '/';
@@ -120,12 +146,14 @@ function DockerMixIn < T extends Constructor < Deployer >> (Base: T) {
         }
         dockerfile += `ADD ${path} /webda/${path}\n`;
       });
+
       if (this.deployment && this.deployment.uuid) {
         // Export deployment
         dockerfile += 'RUN node_modules/.bin/webda -d ' + this.deployment.uuid + ' config webda.config.json\n';
       }
       dockerfile += 'RUN rm -rf deployments\n';
       dockerfile += 'CMD node_modules/.bin/webda ' + command + logfile + '\n'
+      console.log(dockerfile);
       return dockerfile;
     }
   }

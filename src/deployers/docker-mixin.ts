@@ -3,12 +3,16 @@ import {
   Deployer
 } from './deployer';
 import * as fs from 'fs';
+import * as glob from 'glob';
+import * as path from 'path';
+import * as mkdirp from 'mkdirp';
 
 type Constructor < T extends Deployer > = new(...args: any[]) => T;
 
 function DockerMixIn < T extends Constructor < Deployer >> (Base: T) {
   return class extends Base {
     _sentContext: boolean;
+    _copied: boolean = false;
 
     buildDocker(tag, file, stdin) {
       var args = [];
@@ -86,34 +90,86 @@ function DockerMixIn < T extends Constructor < Deployer >> (Base: T) {
       return this.execute("docker", args, this.out.bind(this), this.out.bind(this));
     }
 
-
-    getDockerfileWebdaShell() {
-      let dockerfile = '';
-      var shellPackageInfo = require(__dirname + '/../../package.json');
-      // Get git rev
-      let tag = '';
-      if (shellPackageInfo.version === tag) {
-        return `RUN yarn install webda-shell@${tag}`;
-      } else {
-        // Copy webda-shell into build directory
-        let includes = shellPackageInfo.files || ['lib'];
-        includes.forEach((path) => {
-          let fullpath = __dirname + '/../../' + path;
-          if (fs.lstatSync(fullpath).isDirectory()) {
-            path += '/';
-            dockerfile += `RUN mkdir -p /webda/node_modules/webda-shell/${path}\n`;
-          } else if (path.indexOf('/')) {
-            let basedir = path.substring(0, path.lastIndexOf('/') + 1);
-            dockerfile += `RUN mkdir -p /webda/node_modules/webda-shell/${basedir}\n`;
-          }
-          dockerfile += `ADD ${fullpath} /webda/node_modules/webda-shell/${path}\n`;
-        });
-        dockerfile += `RUN ln -s ../webda-shell/bin/webda /webda/node_modules/.bin\n`;
+    async copyWebdaShellToDist(files) {
+      if (this._copied) {
+        return;
       }
-      return dockerfile;
+      let target = './dist/webda-shell';
+      if (!fs.existsSync('./dist')) {
+        fs.mkdirSync('./dist');
+      }
+      if (!fs.existsSync('./dist/webda-shell')) {
+        fs.mkdirSync('./dist/webda-shell');
+      }
+      let source = path.resolve(__dirname + '/../../');
+      let includes = files || ['lib'];
+      includes.forEach((includePath) => {
+        if (includePath === 'app') {
+          // Skip the wui
+          return;
+        }
+        let fullpath = __dirname + '/../../' + includePath;
+        if (fs.lstatSync(fullpath).isDirectory()) {
+          fullpath += '/**'
+        }
+        glob.sync(fullpath).forEach((file) => {
+          let rel_path = target + file.substring(source.length);
+          let stat = fs.lstatSync(file);
+          if (stat.isDirectory()) {
+            if (!fs.existsSync(rel_path)) {
+              fs.mkdirSync(rel_path);
+            }
+            return;
+          }
+          let parent = path.dirname(rel_path);
+          if (!fs.existsSync(parent)) {
+            mkdirp.sync(parent);
+          }
+          fs.copyFileSync(file, rel_path);
+        });
+      });
+      this._copied = true;
     }
 
-    getDockerfile(command, logfile = undefined) {
+    async getDockerfileWebdaShell() {
+      let dockerfile = '';
+      var shellPackageInfo = require(__dirname + '/../../package.json');
+      shellPackageInfo.files.push('node_modules');
+      shellPackageInfo.files.push('package.json');
+      // Get git rev
+      let tag = shellPackageInfo.version;
+      if (fs.existsSync(__dirname + '/../../.git') && !process.env['WEBDA_SHELL_DEPLOY_VERSION']) {
+        tag = require('child_process').execSync('git describe --dirty --tag');
+        if (shellPackageInfo.version !== tag) {
+          console.log('Untagged version of webda-shell, copying itself');
+          // Copy webda-shell into build directory
+          this.copyWebdaShellToDist(shellPackageInfo.files);
+          let includes = shellPackageInfo.files || ['lib'];
+          includes.forEach((path) => {
+            if (path === 'app') {
+              return;
+            }
+            let fullpath = './dist/webda-shell/' + path;
+            if (fs.lstatSync(fullpath).isDirectory()) {
+              path += '/';
+              dockerfile += `RUN mkdir -p /webda/node_modules/webda-shell/${path}\n`;
+            } else if (path.indexOf('/')) {
+              let basedir = path.substring(0, path.lastIndexOf('/') + 1);
+              dockerfile += `RUN mkdir -p /webda/node_modules/webda-shell/${basedir}\n`;
+            }
+            dockerfile += `ADD ${fullpath} /webda/node_modules/webda-shell/${path}\n`;
+          });
+          dockerfile += `RUN ln -s ../webda-shell/bin/webda /webda/node_modules/.bin\n`;
+          return dockerfile;
+        }
+      }
+      if (process.env['WEBDA_SHELL_DEPLOY_VERSION']) {
+        tag = process.env['WEBDA_SHELL_DEPLOY_VERSION'];
+      }
+      return `RUN yarn install webda-shell@${tag}`;
+    }
+
+    async getDockerfile(command, logfile = undefined) {
       var cwd = process.cwd();
       var packageInfo = require(cwd + '/package.json');
       var dockerfile = `
@@ -126,7 +182,7 @@ function DockerMixIn < T extends Constructor < Deployer >> (Base: T) {
   WORKDIR /webda
   RUN yarn install
   `;
-      dockerfile += this.getDockerfileWebdaShell();
+      dockerfile += await this.getDockerfileWebdaShell();
       // Import webda-shell
       if (!command) {
         command = 'serve';

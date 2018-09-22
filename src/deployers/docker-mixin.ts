@@ -134,9 +134,7 @@ function DockerMixIn < T extends Constructor < Deployer >> (Base: T) {
     async getDockerfileWebdaShell() {
       let dockerfile = '';
       var shellPackageInfo = require(__dirname + '/../../package.json');
-      let includes = shellPackageInfo.files.slice(0);
-      includes.push('node_modules');
-      includes.push('package.json');
+      let includes = ['node_modules', 'package.json', 'lib', 'bin/webda'];
       // Get git rev
       let tag = shellPackageInfo.version;
       if (fs.existsSync(__dirname + '/../../.git') && !process.env['WEBDA_SHELL_DEPLOY_VERSION']) {

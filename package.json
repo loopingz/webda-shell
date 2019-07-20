@@ -1,6 +1,6 @@
 {
   "name": "webda-shell",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "description": "Deploy a Webda app or configure it",
   "keywords": [
     "aws",
@@ -73,7 +73,7 @@
     "open": ">=6.0.0",
     "request": "^2.81.0",
     "request-promise": "^4.2.0",
-    "semver": "^5.5.1",
+    "semver": "^6.2.0",
     "socket.io": "^2.0.3",
     "unzip": "^0.1.11",
     "webda": "^0.11.1",

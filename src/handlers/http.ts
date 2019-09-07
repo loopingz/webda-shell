@@ -153,6 +153,13 @@ export class WebdaServer extends Webda {
       res.setHeader("Access-Control-Allow-Credentials", "true");
       try {
         await executor.execute(ctx);
+        
+        // add all headers added in the the executor's context
+        let headers = ctx.getResponseHeaders();
+        for (let k in headers) {
+          res.setHeader(k, headers[k]);
+        }
+
         if (!ctx._ended) {
           await ctx.end();
         }

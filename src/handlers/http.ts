@@ -243,6 +243,7 @@ export class WebdaServer extends Webda {
       ? this.getGlobalParams().requestLimit
       : "20mb";
     var app = express();
+    app.disable("x-powered-by");
     app.use(cookieParser());
     app.use(
       bodyParser.text({

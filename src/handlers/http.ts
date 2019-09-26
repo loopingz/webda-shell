@@ -57,19 +57,23 @@ export class WebdaServer extends Webda {
       if (method === "PUT" && req.headers["x-webda-method"] !== "PUT") {
         method = "PATCH";
       }
+      let port;
+      if (req.socket && req.socket.address()) {
+	port = req.socket.address().port;
+      }
       let httpContext = new HttpContext(
         vhost,
         method,
         req.url,
         protocol,
-        req.port,
+        port,
         req.body,
         req.headers,
         req.files
       );
       let ctx = await this.newContext(httpContext, res, true);
       ctx.clientInfo = this.getClientInfo(req);
-      
+
       var executor = this.getExecutorWithContext(ctx);
       if (executor == null) {
         let routes = this.getRouteMethodsFromUrl(req.url);
@@ -88,17 +92,18 @@ export class WebdaServer extends Webda {
       let origin =
         req.headers.Origin || req.headers.origin || req.headers.Referer;
       // Set predefined headers for CORS
-      if (origin) {
-        if (this._devMode || (await this.checkCSRF(ctx))) {
+      if (this._devMode || (await this.checkCSRF(ctx))) {
+        if (origin) {
           res.setHeader("Access-Control-Allow-Origin", origin);
-        } else {
-          // Prevent CSRF
-          this.log("INFO", "CSRF denied from", origin);
-          res.writeHead(401);
-          res.end();
-          return;
         }
+      } else {
+        // Prevent CSRF
+        this.log("INFO", "CSRF denied from", origin);
+        res.writeHead(401);
+        res.end();
+        return;
       }
+
       if (protocol === "https") {
         // Add the HSTS header
         res.setHeader(
@@ -153,10 +158,10 @@ export class WebdaServer extends Webda {
       res.setHeader("Access-Control-Allow-Credentials", "true");
       try {
         await executor.execute(ctx);
+        await this.emitSync("Webda.Result", ctx);
         if (!ctx._ended) {
           await ctx.end();
         }
-        await this.emitSync("Webda.Result", ctx);
       } catch (err) {
         await this.emitSync("Webda.Result", ctx);
         if (typeof err === "number") {

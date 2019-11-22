@@ -61,10 +61,14 @@ export class WebdaServer extends Webda {
       if (req.socket && req.socket.address()) {
         port = req.socket.address().port;
       }
+      let url = req.url || "";
+      if (url.endsWith("?")) {
+        url = url.substr(0, url.length - 1);
+      }
       let httpContext = new HttpContext(
         vhost,
         method,
-        req.url,
+        url,
         protocol,
         port,
         req.body,

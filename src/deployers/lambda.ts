@@ -1,5 +1,5 @@
-import { AWSDeployer } from "./aws";
 import { APIGateway, Lambda } from "aws-sdk";
+import { AWSDeployer } from "./aws";
 const fs = require("fs");
 const crypto = require("crypto");
 const filesize = require("filesize");
@@ -88,14 +88,18 @@ export class LambdaDeployer extends AWSDeployer {
       this._lambdaDefaultHandler = true;
     }
     this._lambdaHandler = this.resources.lambdaHandler || "entrypoint.handler";
-    this._lambdaTimeout = 3;
 
+    this._lambdaTimeout = 3;
+    if (this.resources.lambdaTimeout) {
+      this._lambdaTimeout = Number.parseInt(this.resources.lambdaTimeout, 10);
+    }
+
+    // Small memory is slower so no $ gain
+    this._lambdaMemorySize = 2048;
     if (this.resources.lambdaMemory) {
       this._lambdaMemorySize = Number.parseInt(this.resources.lambdaMemory, 10);
-    } else {
-      // Dont handle less well for now
-      this._lambdaMemorySize = 512;
     }
+
     this.region = this._AWS.config.region;
     this._zipPath = "dist/" + this._lambdaFunctionName + ".zip";
     this._origin = this.parameters.website;

@@ -54,7 +54,7 @@ export class AWSDeployer extends Deployer {
     if (forceRegion) {
       config.region = forceRegion;
     }
-    this._acm = new (this._getAWS(config)).ACM();
+    this._acm = new (this._getAWS(config).ACM)();
     return this._acm
       .listCertificates({})
       .promise()
@@ -203,7 +203,7 @@ export class AWSDeployer extends Deployer {
     }
     let targetZone;
     // Find the right zone
-    this._r53 = new (this._getAWS(this.resources)).Route53();
+    this._r53 = new (this._getAWS(this.resources).Route53)();
     // Identify the right zone first
     let res = await this._r53.listHostedZones().promise();
     for (let i in res.HostedZones) {
@@ -480,7 +480,7 @@ export class AWSDeployer extends Deployer {
   }
 
   putFilesOnBucket(bucket, files) {
-    this._s3 = new (this._getAWS(this.resources)).S3();
+    this._s3 = new (this._getAWS(this.resources).S3)();
     // Create the bucket
     return this.createBucket(bucket).then(() => {
       // Should implement multithread here - cleaning too

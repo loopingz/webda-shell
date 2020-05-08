@@ -263,7 +263,7 @@ export class S3Deployer extends AWSDeployer {
     let params: any = {
       MaxItems: "1000"
     };
-    this._cloudfront = new (this._getAWS(this.resources)).CloudFront({
+    this._cloudfront = new (this._getAWS(this.resources).CloudFront)({
       apiVersion: "2018-06-18"
     });
     await this._createCertificate(this.bucket);
@@ -348,7 +348,7 @@ export class S3Deployer extends AWSDeployer {
   }
 
   async deploy(args) {
-    this._s3 = new (this._getAWS(this.resources)).S3();
+    this._s3 = new (this._getAWS(this.resources).S3)();
     let bucket = this.resources.target;
     let source = path.resolve(this.resources.source);
     this.bucket = bucket;

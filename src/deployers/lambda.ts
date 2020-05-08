@@ -79,6 +79,7 @@ export class LambdaDeployer extends AWSDeployer {
       );
     }
 
+    this.resources.nodeVersion = this.resources.nodeVersion || "nodejs12.x";
     if (this._restApiName === undefined) {
       steps.api = false;
     }
@@ -89,7 +90,7 @@ export class LambdaDeployer extends AWSDeployer {
       this._lambdaDefaultHandler = true;
     }
     this._lambdaHandler = this.resources.lambdaHandler || "entrypoint.handler";
-    this._lambdaTimeout = 3;
+    this._lambdaTimeout = this.resources.lambdaTimeout || 3;
 
     if (this.resources.lambdaMemory) {
       this._lambdaMemorySize = Number.parseInt(this.resources.lambdaMemory, 10);
@@ -259,7 +260,7 @@ export class LambdaDeployer extends AWSDeployer {
       FunctionName: this._lambdaFunctionName,
       Handler: this._lambdaHandler,
       Role: this._lambdaRole,
-      Runtime: "nodejs8.10",
+      Runtime: this.resources.nodeVersion,
       Timeout: this._lambdaTimeout,
       Description: "Deployed with Webda for API: " + this._restApiName,
       Publish: true
@@ -460,11 +461,7 @@ export class LambdaDeployer extends AWSDeployer {
       for (let m in swagger.paths[p]) {
         swagger.paths[p][m]["x-amazon-apigateway-integration"] = {
           httpMethod: "POST",
-          uri: `arn:aws:apigateway:${
-            this.region
-          }:lambda:path/2015-03-31/functions/${
-            this._lambdaFunction.FunctionArn
-          }/invocations`,
+          uri: `arn:aws:apigateway:${this.region}:lambda:path/2015-03-31/functions/${this._lambdaFunction.FunctionArn}/invocations`,
           type: "aws_proxy"
         };
       }

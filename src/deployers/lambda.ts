@@ -370,7 +370,7 @@ export class LambdaDeployer extends AWSDeployer {
       FunctionName: this._lambdaFunctionName,
       Handler: this._lambdaHandler,
       Role: this._lambdaRole,
-      Runtime: "nodejs8.10",
+      Runtime: this.resources.nodeVersion,
       Timeout: this._lambdaTimeout,
       Description: "Deployed with Webda for API: " + this._restApiName
     };

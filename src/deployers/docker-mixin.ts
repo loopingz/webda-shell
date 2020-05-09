@@ -175,8 +175,10 @@ function DockerMixIn<T extends Constructor<Deployer>>(Base: T) {
     async getDockerfile(command, logfile = undefined) {
       var cwd = process.cwd();
       var packageInfo = require(cwd + "/package.json");
+      this.resources.fromImage =
+        this.resources.fromImage || "node:lts-alpine";
       var dockerfile = `
-  FROM node:latest
+  FROM ${this.resources.fromImage}
   MAINTAINER docker@webda.io
   EXPOSE 18080
 

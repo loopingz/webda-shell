@@ -15,7 +15,7 @@ import * as glob from "glob";
 import * as rp from "request-promise";
 import * as semver from "semver";
 import * as https from "https";
-import * as unzip from "unzip";
+import * as unzip from "unzipper";
 
 import * as YAML from "yamljs";
 
@@ -60,7 +60,7 @@ class ModuleLoader {
   }
 
   load() {
-    ModuleLoader.getPackagesLocations().forEach(path => {
+    ModuleLoader.getPackagesLocations().forEach((path) => {
       if (fs.existsSync(path) && fs.lstatSync(path).isDirectory()) {
         path += "/**/*.js";
       }
@@ -74,7 +74,7 @@ class ModuleLoader {
       JSON.stringify(
         {
           services: this.services,
-          models: this.models
+          models: this.models,
         },
         null,
         " "
@@ -98,20 +98,20 @@ export default class WebdaConsole {
       yauzl.fromBuffer(
         body,
         {
-          lazyEntries: true
+          lazyEntries: true,
         },
-        function(err, zipfile) {
+        function (err, zipfile) {
           if (err) {
             return reject(err);
           }
           zipfile.readEntry();
-          zipfile.on("end", function() {
+          zipfile.on("end", function () {
             return resolve();
           });
-          zipfile.on("entry", function(entry) {
+          zipfile.on("entry", function (entry) {
             if (/\/$/.test(entry.fileName)) {
               // directory file names end with '/'
-              mkdirp(dest_dir + entry.fileName, function(err) {
+              mkdirp(dest_dir + entry.fileName, function (err) {
                 if (err) {
                   return reject(err);
                 }
@@ -119,15 +119,15 @@ export default class WebdaConsole {
               });
             } else {
               // file entry
-              zipfile.openReadStream(entry, function(err, readStream) {
+              zipfile.openReadStream(entry, function (err, readStream) {
                 if (err) throw err;
                 // ensure parent directory exists
-                mkdirp(path.dirname(dest_dir + entry.fileName), function(err) {
+                mkdirp(path.dirname(dest_dir + entry.fileName), function (err) {
                   if (err) throw err;
                   readStream.pipe(
                     fs.createWriteStream(dest_dir + entry.fileName)
                   );
-                  readStream.on("end", function() {
+                  readStream.on("end", function () {
                     zipfile.readEntry();
                   });
                 });
@@ -146,17 +146,17 @@ export default class WebdaConsole {
       fit: "box",
       width: 20,
       height: 20,
-      format: "array"
+      format: "array",
     };
     return asciify(logo, options)
-      .then(function(asciified) {
+      .then(function (asciified) {
         // Print asciified image to console
         fs.writeFileSync(logo + ".json", JSON.stringify(asciified));
-        asciified.forEach(line => {
+        asciified.forEach((line) => {
           this.output(line.join(""));
         });
       })
-      .catch(function(err) {
+      .catch(function (err) {
         this.output("err", err);
       });
   }
@@ -231,7 +231,7 @@ export default class WebdaConsole {
     if ((<any>process.stdout).columns > 130) {
       return this.logo(lines);
     } else {
-      lines.forEach(line => {
+      lines.forEach((line) => {
         this.output(line);
       });
     }
@@ -244,25 +244,25 @@ export default class WebdaConsole {
       .alias("o", "open")
       .alias("x", "devMode")
       .option("log-level", {
-        default: "INFO"
+        default: "INFO",
       })
       .option("no-compile", {
-        type: "boolean"
+        type: "boolean",
       })
       .option("version", {
-        type: "boolean"
+        type: "boolean",
       })
       .option("port", {
         alias: "p",
-        default: 18080
+        default: 18080,
       })
       .option("websockets", {
         alias: "w",
-        default: false
+        default: false,
       })
       .option("include-hidden", {
         type: "boolean",
-        default: false
+        default: false,
       })
       .parse(args);
   }
@@ -357,7 +357,7 @@ export default class WebdaConsole {
     let timestamp = new Date().getTime();
     let promise = service[method].apply(service, argv._.slice(3));
     if (promise instanceof Promise) {
-      return promise.catch(err => {
+      return promise.catch((err) => {
         this.output("An error occured", err);
       });
     }
@@ -368,7 +368,7 @@ export default class WebdaConsole {
   }
 
   static debug(argv) {
-    process.on("SIGINT", function() {
+    process.on("SIGINT", function () {
       if (server_pid) {
         server_pid.kill();
       }
@@ -406,7 +406,7 @@ export default class WebdaConsole {
           chunk
             .toString()
             .split("\n")
-            .forEach(line => {
+            .forEach((line) => {
               if (line.length < 4) return;
               this.push(
                 "[" +
@@ -417,7 +417,7 @@ export default class WebdaConsole {
               );
             });
           callback();
-        }
+        },
       });
       server_pid = require("child_process").spawn("webda", args);
       server_pid.stdout.pipe(addTime).pipe(process.stdout);
@@ -460,7 +460,7 @@ export default class WebdaConsole {
             this.push(info);
           }
           callback();
-        }
+        },
       });
       this.typescriptCompile(true, transform);
     } else {
@@ -473,13 +473,13 @@ export default class WebdaConsole {
         }
       };
       // glob files
-      ModuleLoader.getPackagesLocations().forEach(path => {
+      ModuleLoader.getPackagesLocations().forEach((path) => {
         if (fs.existsSync(path) && fs.lstatSync(path).isDirectory()) {
           // Linux limitation, the recursive does not work
           fs.watch(
             path,
             <Object>{
-              resursive: true
+              resursive: true,
             },
             listener
           );
@@ -533,7 +533,7 @@ export default class WebdaConsole {
     }
     let versions = await rp({
       uri: this.getLastWUIVersionURL(),
-      json: true
+      json: true,
     });
     let currentVersion = this.getVersion();
     let wui;
@@ -554,7 +554,7 @@ export default class WebdaConsole {
     }
     let versionFile = path + "/version.json";
     let currentWui = {
-      hash: ""
+      hash: "",
     };
     if (fs.existsSync(versionFile)) {
       currentWui = JSON.parse(fs.readFileSync(versionFile).toString());
@@ -563,20 +563,20 @@ export default class WebdaConsole {
       const _cliProgress = require("cli-progress");
       const bar1 = new _cliProgress.Bar(
         {
-          format: this.getBarLabel()
+          format: this.getBarLabel(),
         },
         _cliProgress.Presets.shades_classic
       );
       // Add cli_progress here
       bar1.start(wui.size, 0, {
-        action: "Downloading WUI"
+        action: "Downloading WUI",
       });
       let dataLength = 0;
       let fsTest = fs.createWriteStream(path + "/package.zip");
       await new Promise((resolve, reject) => {
-        https.get(wui.url, res => {
+        https.get(wui.url, (res) => {
           res.pipe(fsTest);
-          res.on("data", function(chunk) {
+          res.on("data", function (chunk) {
             dataLength += chunk.length;
             bar1.update(dataLength);
           });
@@ -584,15 +584,15 @@ export default class WebdaConsole {
         fsTest.on("close", () => {
           dataLength = 0;
           bar1.update(dataLength, {
-            action: "Extracting WUI"
+            action: "Extracting WUI",
           });
           let src = fs.createReadStream(path + "/package.zip");
-          src.on("data", function(chunk) {
+          src.on("data", function (chunk) {
             dataLength += chunk.length;
             bar1.update(dataLength);
           });
           let unzipStream = unzip.Extract({
-            path
+            path,
           });
           src.pipe(unzipStream);
           unzipStream.on("close", () => {
@@ -631,14 +631,14 @@ export default class WebdaConsole {
 
   static async deploy(argv) {
     webda = await this._getNewConfig();
-    return webda.deploy(argv.deployment, argv._.slice(1)).catch(err => {
+    return webda.deploy(argv.deployment, argv._.slice(1)).catch((err) => {
       this.output("Error", err);
     });
   }
 
   static async undeploy(argv) {
     webda = await this._getNewConfig();
-    return webda.undeploy(argv.deployment, argv._.slice(1)).catch(err => {
+    return webda.undeploy(argv.deployment, argv._.slice(1)).catch((err) => {
       this.output(err);
     });
   }
@@ -661,7 +661,7 @@ export default class WebdaConsole {
       generatorName
     );
     await new Promise((resolve, reject) => {
-      env.run(generatorName, err => {
+      env.run(generatorName, (err) => {
         if (err) {
           reject(err);
         }
@@ -725,7 +725,7 @@ export default class WebdaConsole {
       case "debug":
         return this.debug(argv);
       case "config":
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           let promise = this.config(argv);
           if (promise) {
             resolve(promise);
@@ -802,7 +802,7 @@ export default class WebdaConsole {
         tsc_compile.stdout.pipe(stream).pipe(process.stdout);
       }
       return new Promise((resolve, reject) => {
-        tsc_compile.on("exit", function(code, signal) {
+        tsc_compile.on("exit", function (code, signal) {
           if (!code) {
             resolve();
             return;

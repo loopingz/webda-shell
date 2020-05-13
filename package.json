@@ -99,5 +99,6 @@
     ],
     "report-dir": "./reports",
     "all": true
-  }
+  },
+  "resolutions": {"fstream": "1.0.12"}
 }

@@ -1,6 +1,6 @@
 {
   "name": "webda-shell",
-  "version": "0.11.7",
+  "version": "0.11.8",
   "description": "Deploy a Webda app or configure it",
   "keywords": [
     "aws",
@@ -11,6 +11,9 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "repository": "git://github.com/loopingz/webda-shell.git",
+  "resolutions": {
+    "fstream": "1.0.12"
+  },
   "devDependencies": {
     "@types/node": "^10.7.0",
     "browser-sync": "^2.7.7",
@@ -76,7 +79,7 @@
     "request-promise": "^4.2.0",
     "semver": "^6.2.0",
     "socket.io": "^2.0.3",
-    "unzip": "^0.1.11",
+    "unzipper": "^0.10.11",
     "webda": "^0.11.6",
     "webda-aws": "^0.11.0",
     "yamljs": "^0.3.0",

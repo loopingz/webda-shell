@@ -1,0 +1,18 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.13.5
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-HTTPSPROXYAGENT-469131:
+    - webda > google-auth-library > gaxios > https-proxy-agent:
+        patched: '2019-10-03T21:05:26.883Z'
+    - webda > google-auth-library > gcp-metadata > gaxios > https-proxy-agent:
+        patched: '2019-10-03T21:05:26.883Z'
+    - webda > google-auth-library > gtoken > gaxios > https-proxy-agent:
+        patched: '2019-10-03T21:05:26.883Z'
+    - webda-aws > webda > google-auth-library > gaxios > https-proxy-agent:
+        patched: '2019-10-03T21:05:26.883Z'
+    - webda-aws > webda > google-auth-library > gcp-metadata > gaxios > https-proxy-agent:
+        patched: '2019-10-03T21:05:26.883Z'
+    - webda-aws > webda > google-auth-library > gtoken > gaxios > https-proxy-agent:
+        patched: '2019-10-03T21:05:26.883Z'
